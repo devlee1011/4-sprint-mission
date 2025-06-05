@@ -11,10 +11,6 @@ public class ServiceFactory {
     private final ChannelService channelService;
     private final MessageService messageService;
 
-    public enum ServiceType {
-        User, Channel, Message
-    }
-
     public ServiceFactory() {
         userService = new JCFUserService();
         channelService = new JCFChannelService();

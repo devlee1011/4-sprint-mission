@@ -26,7 +26,6 @@ public class User extends BaseEntity {
         this.status = Status.ACTIVE;
     }
 
-
     // Getter/Setter
     public void setChannels(List<Channel> channels) {
         this.channels = channels;

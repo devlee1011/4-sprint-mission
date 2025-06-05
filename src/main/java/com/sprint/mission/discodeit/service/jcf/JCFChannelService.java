@@ -36,12 +36,6 @@ public class JCFChannelService extends ErrorMessageService implements ChannelSer
 
     }
 
-    // 채널 리스트에 매개변수로 받은 채널 추가
-    @Override
-    public void addToChannels(Channel channel) {
-        channels.add(channel);
-    }
-
     // Read
     @Override
     public List<Channel> getChannels() {

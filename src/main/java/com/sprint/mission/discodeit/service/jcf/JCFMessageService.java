@@ -36,12 +36,6 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
         }
     }
 
-    // 메시지 리스트에 메시지 추가
-    @Override
-    public void addToMessages(Message message) {
-        messages.add(message);
-    }
-
     // Read
     @Override
     public List<Message> getMessages() {

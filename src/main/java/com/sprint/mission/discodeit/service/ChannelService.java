@@ -12,9 +12,6 @@ public interface ChannelService {
     // Create
     public Optional<Channel> addChannel(String name, User hostUser);
 
-    // 채널 리스트에 추가
-    public void addToChannels(Channel channel);
-
     // Read
     public List<Channel> getChannels();
 

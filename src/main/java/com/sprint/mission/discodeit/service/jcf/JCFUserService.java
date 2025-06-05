@@ -32,12 +32,6 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         }
     }
 
-    // 매개변수로 받은 user를 리스트에 추가
-    @Override
-    public void addToUsers(User user) {
-        users.add(user);
-    }
-
     // default user 생성기
     @Override
     public User temp() {

@@ -11,7 +11,7 @@ public class EntityPrinter {
     }
 
     // 채널 프린트 메서드
-    public static void printService(Channel c, JavaApplication.PrintCode printCode) {
+    public static void printService(Channel c, PrintCode printCode) {
         switch (printCode) {
             case USER ->
                     System.out.println("<\"" + c.getChannelName() + "\" (" + c.getId() + ")에 참가한 유저 목록 조회하기>\n" + c.getUsers());
@@ -24,7 +24,7 @@ public class EntityPrinter {
     }
 
     // 유저 프린트 메서드
-    public static void printService(User u, JavaApplication.PrintCode printCode) {
+    public static void printService(User u, PrintCode printCode) {
         switch (printCode) {
             case USER ->
                     System.out.println("<\"" + u.getUserName() + "\"" + "님(" + u.getId() + ")" + "의 상태 확인하기>\n" + u);
@@ -38,7 +38,7 @@ public class EntityPrinter {
     }
 
     // 메시지 프린트 메서드
-    public static void printService(Message m, JavaApplication.PrintCode printCode) {
+    public static void printService(Message m, PrintCode printCode) {
         switch (printCode) {
             case USER ->
                     System.out.println("<이 메시지는 \"" + m.getUser().getUserName() + "\"(" + m.getUser().getId() + ")님이 보내신 메시지 입니다.> \n" + m);

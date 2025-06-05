@@ -12,9 +12,6 @@ public interface UserService {
     // Create
     public Optional<User> addUser(String name);
 
-    // 리스트에 매개변수로 받은 유저 객체 추가
-    public void addToUsers(User user);
-
     // default 유저
     public User temp();
     

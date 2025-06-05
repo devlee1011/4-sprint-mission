@@ -13,9 +13,6 @@ public interface MessageService {
     // Create
     public Optional<Message> addMessage(User user, Channel channel, String contents);
 
-    // 메시지 리스트에 메시지 추가
-    public void addToMessages(Message message);
-
     // Read
     public List<Message> getMessages();
 

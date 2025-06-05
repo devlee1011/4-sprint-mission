@@ -25,10 +25,6 @@ public class Message extends BaseEntity {
         this.messageContents = messageContents;
     }
 
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -39,10 +35,6 @@ public class Message extends BaseEntity {
 
     public Channel getChannel() {
         return channel;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
     }
 
     @Override

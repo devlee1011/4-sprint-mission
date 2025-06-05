@@ -17,14 +17,6 @@ public class BaseEntity {
         return id;
     }
 
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
     }
