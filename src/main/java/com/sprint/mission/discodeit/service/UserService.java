@@ -30,15 +30,15 @@ public interface UserService {
 
     // 참여중인 채널 관련 메서드
     // 채널 참가
-    public void joinChannel(UUID id, Channel channel);
+    public void joinChannel(UUID id, Channel nullableChannel);
 
     // 채널 나가기
-    public void outChannel(UUID id, Channel channel);
+    public void outChannel(UUID id, Channel nullableChannel);
 
     // 유저 활성 관련 코드
     // 유저 활성화
-    public void activateUser(User user);
+    public void activateUserById(UUID id);
 
     // 유저 비활성화
-    public void deactivateUser(UUID id);
+    public void deactivateUserById(UUID id);
 }

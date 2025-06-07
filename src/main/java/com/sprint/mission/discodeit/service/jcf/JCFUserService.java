@@ -54,10 +54,10 @@ public class JCFUserService extends ErrorMessageService implements UserService {
 
     @Override
     public Optional<User> getUserById(UUID id) {
-        // users에서 매개변수로 지정된 id와 같고, 활동 상태인 유저만 찾는다. (아니면 Optional)
+        // 리스트(users)에서 매개변수로 지정된 id와 같고, QUIT(탈퇴) 상태가 아닌 유저만 찾는다.
         Optional<User> user = users.stream()
                 .filter(u -> u.getId().equals(id))
-                .filter(u -> u.getStatus() == User.Status.ACTIVE)
+                .filter(u -> u.getStatus() != User.Status.QUIT)
                 .findFirst();
         if (user.isPresent()) {
             return user;
@@ -67,132 +67,178 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         }
     }
 
-    // Update
+    // Update: ACTIVE 유저만 가능
     @Override
     public void updateUserById(UUID id, String name) {
         Optional<User> u = getUserById(id);
-        User user;
-        // Optional u 값 검증
         if (u.isPresent()) {
-            user = u.get();
+            User user = u.get();
+            if(user.getStatus() == User.Status.ACTIVE){
+                user.setUserName(name);
+                user.setUpdatedAt(System.currentTimeMillis());
+            } else {
+                // BANNED, SLEEP, QUIT 에러 메시지
+                printErrorMessage("updateUserById");
+            }
         } else {
+            // null(empty) 유저에 대한 에러 메시지
             printErrorMessage("updateUserById");
-            return;
         }
-        user.setUserName(name);
-        user.setUpdatedAt(System.currentTimeMillis());
     }
 
     @Override
     public void updateUserStatusById(UUID id, User.Status status) {
         Optional<User> u = getUserById(id);
-        User user;
-        // Optional u 값 검증
         if (u.isPresent()) {
-            user = u.get();
+            User user = u.get();
+            if(user.getStatus() == User.Status.ACTIVE){
+                user.setStatus(status);
+                user.setUpdatedAt(System.currentTimeMillis());
+            } else {
+                // BANNED, SLEEP, QUIT 에러 메시지
+                printErrorMessage("updateUserById");
+            }
         } else {
-            printErrorMessage("updateUserStatusById");
-            return;
+            // null(empty) 유저에 대한 에러 메시지
+            printErrorMessage("updateUserById");
         }
-        user.setStatus(status);
-        user.setUpdatedAt(System.currentTimeMillis());
     }
 
-    // Delete
+    // Delete: ACTIVE 유저만 가능
     @Override
     public void deleteUserById(UUID id) {
         Optional<User> u = getUserById(id);
-        User user;
-        // Optional u 값 검증
         if (u.isPresent()) {
-            user = u.get();
+            User user = u.get();
+            if(user.getStatus() == User.Status.ACTIVE){
+                user.removeAllChannelsAndMessages();
+                user.setStatus(User.Status.QUIT);
+                user.setUpdatedAt(System.currentTimeMillis());
+                users.remove(user);
+            } else {
+                // BANNED, SLEEP, QUIT 에러 메시지
+                printErrorMessage("deleteUserById");
+            }
         } else {
+            // QUIT(empty) 유저에 대한 에러 메시지
             printErrorMessage("deleteUserById");
-            return;
         }
-        user.removeAllChannelsAndMessages();
-        user.setStatus(User.Status.QUIT);
-        user.setUpdatedAt(System.currentTimeMillis());
-        users.remove(user);
     }
 
-    // 채널 참가 관련 메서드
-    public void joinChannel(UUID id, Channel channel) {
+    // 채널 참가 관련 메서드: ACTIVE 유저만 가능
+    public void joinChannel(UUID id, Channel nullableChannel) {
         Optional<User> u = getUserById(id);
         User user;
-        // Optional u 값 검증
+        // 유저 검증 (null, ACTIVE 검사)
         if (u.isPresent()) {
-            user = u.get();
+            if(u.get().getStatus() == User.Status.ACTIVE){
+                user = u.get();
+            } else {
+                // BANNED, SLEEP, QUIT 에러 메시지
+                printErrorMessage("joinChannel");
+                return;
+            }
         } else {
+            // null(empty)에 대한 에러 메시지
             printErrorMessage("joinChannel");
             return;
         }
 
-        Optional<Channel> nullableChannel = Optional.ofNullable(channel);
-        nullableChannel.ifPresent(c -> {
-            if (c.getIsActive()) {
-                user.addChannel(c);
-                c.addUser(user);
+        // 채널 검증 (null, isActive 검사)
+        Optional<Channel> c = Optional.ofNullable(nullableChannel);
+        if (c.isPresent()) {
+            Channel channel = c.get();
+            if (channel.getIsActive()) {
+                user.addChannel(channel);
+                channel.addUser(user);
             } else {
-                printErrorMessage("joinChannel");
+                // 비활성 상태인 채널에 대한 에러 메시지
+                printErrorMessage("joinChannel" + " <채널 받아오기 실패; isActvie == false>");
             }
-        });
+        } else {
+            // null(empty)에 대한 에러 메시지
+            printErrorMessage("joinChannel" + " <채널 받아오기 실패; channel is null>");
+        }
     }
 
-    // 채널 나가기
-    public void outChannel(UUID id, Channel channel) {
+    // 채널 나가기: ACTIVE 유저만 가능
+    public void outChannel(UUID id, Channel nullableChannel) {
         Optional<User> u = getUserById(id);
         User user;
-        // Optional u 값 검증
+        // 유저 검증 (null, ACTIVE 검사)
         if (u.isPresent()) {
-            user = u.get();
+            if(u.get().getStatus() == User.Status.ACTIVE){
+                user = u.get();
+            } else {
+                // BANNED, SLEEP, QUIT 에러 메시지
+                printErrorMessage("outChannel");
+                return;
+            }
         } else {
+            // null(empty)에 대한 에러 메시지
             printErrorMessage("outChannel");
             return;
         }
 
-        Optional<Channel> nullableChannel = Optional.ofNullable(channel);
-        nullableChannel.ifPresent(c -> {
-            if (c.getIsActive()) {
-                user.outFromChannel(c);
+        // 채널 검증 (null, isActive 검사)
+        Optional<Channel> c = Optional.ofNullable(nullableChannel);
+        if (c.isPresent()) {
+            Channel channel = c.get();
+            if (channel.getIsActive()) {
+                user.outFromChannel(channel);
             } else {
-                printErrorMessage("outChannel");
+                // 비활성 상태인 채널에 대한 에러 메시지
+                printErrorMessage("outChannel" + " <채널 받아오기 실패; isActvie == false>");
             }
-        });
+        } else {
+            // null(empty)에 대한 에러 메시지
+            printErrorMessage("outChannel" + " <채널 받아오기 실패; channel is null>");
+        }
     }
 
     // 활성 회원 관련 코드
-    // 유저 활성화 하기
+    // 유저 활성화: BANNED, SLEEP 유저만 가능
     @Override
-    public void activateUser(User user) {
-        Optional<User> nullableUser = Optional.ofNullable(user);
-        if (nullableUser.isPresent()) {
-            User u = nullableUser.get();
-            if (u.getStatus() == User.Status.ACTIVE) {
-                System.out.println("<activateUser 실패: 이미 활성화된 유저입니다.>");
-            } else if (u.getStatus() == User.Status.QUIT) {
-                System.out.println("<activateUser 실패: 탈퇴한 회원은 활성화시킬 수 없습니다. 계정을 다시 만들어 주십시오.>");
-            } else {
-                u.setStatus(User.Status.ACTIVE);
+    public void activateUserById(UUID id) {
+        Optional<User> u = getUserById(id);
+        if (u.isPresent()) {
+            User user = u.get();
+            switch (user.getStatus()) {
+                case ACTIVE -> {
+                    System.out.println("<activateUserById 실패: 이미 활성화된 유저입니다.>");
+                }
+                case QUIT -> {
+                    System.out.println("<activateUserById 실패: 탈퇴한 회원입니다.>");
+                }
+                case BANNED, SLEEP -> {
+                    user.setStatus(User.Status.ACTIVE);
+                }
+                default -> {
+                    System.out.println("<activateUserById 실패: 알 수 없는 상태입니다.>");
+                }
             }
         } else {
+            // null(empty)에 대한 에러 메시지
             printErrorMessage("activateUser");
         }
     }
 
-    // 유저 비활성화 하기
+    // 유저 비활성화 하기: ACTIVE 유저만 가능
     @Override
-    public void deactivateUser(UUID id) {
+    public void deactivateUserById(UUID id) {
         Optional<User> u = getUserById(id);
-        User user;
-        // Optional u 값 검증
         if (u.isPresent()) {
-            user = u.get();
+            User user = u.get();
+            if(user.getStatus() == User.Status.ACTIVE){
+                user.setStatus(User.Status.SLEEP);
+                user.setUpdatedAt(System.currentTimeMillis());
+            } else {
+                // BANNED, SLEEP, QUIT 에러 메시지
+                printErrorMessage("deactivateUserById");
+            }
         } else {
-            printErrorMessage("deactivateUser");
-            return;
+            // null(empty)에 대한 에러 메시지
+            printErrorMessage("deactivateUserById");
         }
-        user.setStatus(User.Status.SLEEP);
-        user.setUpdatedAt(System.currentTimeMillis());
     }
 }

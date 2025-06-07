@@ -262,8 +262,8 @@ public class JavaApplication extends EntityPrinter {
 
         // error: 탈퇴한 회원은 재활성화 불가능. user4(김코드): QUIT
         System.out.println("\n<Activate 기능 테스트>");
-        userService.activateUser(user4);
-        userService.activateUser(user5);
+        userService.activateUserById(user4.getId());
+        userService.activateUserById(user5.getId());
 
 
         // error: 탈퇴한 회원은 채널을 생성하거나, 메시지를 전송할 수 없음. user4(김코드): QUIT
@@ -275,15 +275,17 @@ public class JavaApplication extends EntityPrinter {
         System.out.println("<channel5(김코드님의 채널) 추가 실패>\n" + channelService.getChannels() + "\n");
         System.out.println("<message10(신나는 음악을 들어요)이 추가 실패>\n" + messageService.getMessages());
 
-        // user6(guest)의 Status가 deactivateUser()로 인해 SLEEP으로 전환됨.
-        System.out.println("\n<enum 타입 테스트: deactivateUser() 테스트>");
+        // user6(guest)의 Status가 deactivateUserById()로 인해 SLEEP으로 전환됨.
+        System.out.println("\n<enum 타입 테스트: deactivateUserById() 테스트>");
         User user6 = userService.addUser("").orElse(userService.temp());
         printService(user6, PrintCode.USER);
 
-        userService.deactivateUser(user6.getId());
+        userService.deactivateUserById(user6.getId());
         System.out.println(user6.getStatus());
 
-        // error: ACTIVE가 아닌 회원(BANNED, SLEEP, QUIT)은 채널 참가 불가능
-        channel1.ifPresent(c -> userService.joinChannel(user6.getId(), c));
+        // error: ACTIVE가 아닌 회원(BANNED, SLEEP, QUIT)은 채널 참가, 유저 정보 업데이트 등 서비스 이용 불가능
+        //channel1.ifPresent(c -> userService.joinChannel(user6.getId(), c));
+        userService.updateUserById(user6.getId(), "킹콩부대찌개");
+        System.out.println(userService.getUserById(user6.getId()));
     }
 }
