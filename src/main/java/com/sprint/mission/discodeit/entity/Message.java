@@ -25,10 +25,6 @@ public class Message extends BaseEntity {
         this.messageContents = messageContents;
     }
 
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public User getUser() {
         return user;
     }

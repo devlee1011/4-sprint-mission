@@ -16,9 +16,10 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
     public Optional<Message> addMessage(User user, Channel channel, String contents) {
         /*
             메시지 생성 및 검사
-            1. 유저와 채널이 null이 아니면서 활성 상태여야 한다.
-            2. 채널과 유저가 각각의 리스트에 추가 되어있어야 한다.
-            3. 메시지의 내용이 비어있으면 안된다.
+            1. 유저가 null이 아니면서 ACTIVE 상태여야 한다.
+            2. 채널이 null이 아니면서 isActive가 true여야 한다.
+            3. 채널과 유저가 각각의 리스트에 추가 되어있어야 한다.
+            4. 메시지의 내용이 비어있으면 안된다.
             위의 조건을 어기면 Optional.empty() 반환
         */
         if (user != null && user.getStatus() == User.Status.ACTIVE
@@ -31,7 +32,7 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
             channel.addMessage(message);
             return Optional.of(message);
         } else {
-            printErrorMessage("addMessage");
+            printErrorMessage();
             return Optional.empty();
         }
     }
@@ -53,7 +54,7 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
         if (message.isPresent()) {
             return message;
         } else {
-            printErrorMessage("getMessageById");
+            printErrorMessage();
             return Optional.empty();
         }
     }
@@ -66,7 +67,7 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
         if (m.isPresent()) {
             message = m.get();
         } else {
-            printErrorMessage("updateMessageContentsById");
+            printErrorMessage();
             return;
         }
 
@@ -79,7 +80,7 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
             message.setMessageContents(newContents);
             message.setUpdatedAt(System.currentTimeMillis());
         } else {
-            printErrorMessage("updateMessageContentsById");
+            printErrorMessage();
         }
     }
 
@@ -91,7 +92,7 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
         if (m.isPresent()) {
             message = m.get();
         } else {
-            printErrorMessage("deleteMessageById");
+            printErrorMessage();
             return;
         }
         /*
@@ -105,7 +106,7 @@ public class JCFMessageService extends ErrorMessageService implements MessageSer
             channel.removeMessageByMessageId(message.getId());
             messages.remove(message);
         } else {
-            printErrorMessage("deleteMessageById");
+            printErrorMessage();
         }
     }
 }

@@ -30,10 +30,9 @@ public class JCFChannelService extends ErrorMessageService implements ChannelSer
             hostUser.addChannel(channel);
             return Optional.of(channel);
         } else {
-            printErrorMessage("addChannel");
+            printErrorMessage();
             return Optional.empty();
         }
-
     }
 
     // Read
@@ -53,10 +52,10 @@ public class JCFChannelService extends ErrorMessageService implements ChannelSer
                 .filter(c -> c.getId().equals(id))
                 .filter(Channel::getIsActive)
                 .findFirst();
-        if(channel.isPresent()) {
+        if (channel.isPresent()) {
             return channel;
         } else {
-            printErrorMessage("getChannelById");
+            printErrorMessage();
             return Optional.empty();
         }
     }
@@ -70,7 +69,7 @@ public class JCFChannelService extends ErrorMessageService implements ChannelSer
         if (c.isPresent()) {
             channel = c.get();
         } else {
-            printErrorMessage("updateChannelNameById");
+            printErrorMessage();
             return;
         }
 
@@ -80,7 +79,7 @@ public class JCFChannelService extends ErrorMessageService implements ChannelSer
             channel.setChannelName(name);
             channel.setUpdatedAt(System.currentTimeMillis());
         } else {
-            printErrorMessage("updateChannelNameById");
+            printErrorMessage();
         }
     }
 
@@ -92,17 +91,17 @@ public class JCFChannelService extends ErrorMessageService implements ChannelSer
         if (c.isPresent()) {
             channel = c.get();
         } else {
-            printErrorMessage("deleteChannelById");
+            printErrorMessage();
             return;
         }
 
-        if(channel.getIsActive() && channel.getHostUserId().equals(hostUserId)) {
+        if (channel.getIsActive() && channel.getHostUserId().equals(hostUserId)) {
             // 채널을 삭제하면서, 채널에 남겨진 정보를 모두 삭제합니다
             channel.removeAllUsersAndMessages();
             channels.remove(channel);
             channel.setIsActive(false);
         } else {
-            printErrorMessage("deleteChannelById");
+            printErrorMessage();
         }
     }
 }

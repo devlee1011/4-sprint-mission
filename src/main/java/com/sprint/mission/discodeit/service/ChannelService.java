@@ -22,6 +22,6 @@ public interface ChannelService {
 
     // Delete
     public void deleteChannelById(UUID id, UUID hostUserId);
-    
+
 
 }

@@ -62,7 +62,7 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         if (user.isPresent()) {
             return user;
         } else {
-            printErrorMessage("getUserById");
+            printErrorMessage();
             return Optional.empty();
         }
     }
@@ -73,16 +73,16 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         Optional<User> u = getUserById(id);
         if (u.isPresent()) {
             User user = u.get();
-            if(user.getStatus() == User.Status.ACTIVE){
+            if (user.getStatus() == User.Status.ACTIVE) {
                 user.setUserName(name);
                 user.setUpdatedAt(System.currentTimeMillis());
             } else {
                 // BANNED, SLEEP, QUIT 에러 메시지
-                printErrorMessage("updateUserById");
+                printErrorMessage();
             }
         } else {
             // null(empty) 유저에 대한 에러 메시지
-            printErrorMessage("updateUserById");
+            printErrorMessage();
         }
     }
 
@@ -91,16 +91,16 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         Optional<User> u = getUserById(id);
         if (u.isPresent()) {
             User user = u.get();
-            if(user.getStatus() == User.Status.ACTIVE){
+            if (user.getStatus() == User.Status.ACTIVE) {
                 user.setStatus(status);
                 user.setUpdatedAt(System.currentTimeMillis());
             } else {
                 // BANNED, SLEEP, QUIT 에러 메시지
-                printErrorMessage("updateUserById");
+                printErrorMessage();
             }
         } else {
             // null(empty) 유저에 대한 에러 메시지
-            printErrorMessage("updateUserById");
+            printErrorMessage();
         }
     }
 
@@ -110,18 +110,18 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         Optional<User> u = getUserById(id);
         if (u.isPresent()) {
             User user = u.get();
-            if(user.getStatus() == User.Status.ACTIVE){
+            if (user.getStatus() == User.Status.ACTIVE) {
                 user.removeAllChannelsAndMessages();
                 user.setStatus(User.Status.QUIT);
                 user.setUpdatedAt(System.currentTimeMillis());
                 users.remove(user);
             } else {
                 // BANNED, SLEEP, QUIT 에러 메시지
-                printErrorMessage("deleteUserById");
+                printErrorMessage();
             }
         } else {
             // QUIT(empty) 유저에 대한 에러 메시지
-            printErrorMessage("deleteUserById");
+            printErrorMessage();
         }
     }
 
@@ -131,16 +131,16 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         User user;
         // 유저 검증 (null, ACTIVE 검사)
         if (u.isPresent()) {
-            if(u.get().getStatus() == User.Status.ACTIVE){
+            if (u.get().getStatus() == User.Status.ACTIVE) {
                 user = u.get();
             } else {
                 // BANNED, SLEEP, QUIT 에러 메시지
-                printErrorMessage("joinChannel");
+                printErrorMessage();
                 return;
             }
         } else {
             // null(empty)에 대한 에러 메시지
-            printErrorMessage("joinChannel");
+            printErrorMessage();
             return;
         }
 
@@ -153,11 +153,13 @@ public class JCFUserService extends ErrorMessageService implements UserService {
                 channel.addUser(user);
             } else {
                 // 비활성 상태인 채널에 대한 에러 메시지
-                printErrorMessage("joinChannel" + " <채널 받아오기 실패; isActvie == false>");
+                printErrorMessage();
+                System.out.println(" <채널 받아오기 실패; isActvie == false>");
             }
         } else {
             // null(empty)에 대한 에러 메시지
-            printErrorMessage("joinChannel" + " <채널 받아오기 실패; channel is null>");
+            printErrorMessage();
+            System.out.println("<채널 받아오기 실패; channel is null>\")");
         }
     }
 
@@ -167,16 +169,16 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         User user;
         // 유저 검증 (null, ACTIVE 검사)
         if (u.isPresent()) {
-            if(u.get().getStatus() == User.Status.ACTIVE){
+            if (u.get().getStatus() == User.Status.ACTIVE) {
                 user = u.get();
             } else {
                 // BANNED, SLEEP, QUIT 에러 메시지
-                printErrorMessage("outChannel");
+                printErrorMessage();
                 return;
             }
         } else {
             // null(empty)에 대한 에러 메시지
-            printErrorMessage("outChannel");
+            printErrorMessage();
             return;
         }
 
@@ -188,11 +190,13 @@ public class JCFUserService extends ErrorMessageService implements UserService {
                 user.outFromChannel(channel);
             } else {
                 // 비활성 상태인 채널에 대한 에러 메시지
-                printErrorMessage("outChannel" + " <채널 받아오기 실패; isActvie == false>");
+                printErrorMessage();
+                System.out.println(" <채널 받아오기 실패; isActvie == false>");
             }
         } else {
             // null(empty)에 대한 에러 메시지
-            printErrorMessage("outChannel" + " <채널 받아오기 실패; channel is null>");
+            printErrorMessage();
+            System.out.println("<채널 받아오기 실패; channel is null>\")");
         }
     }
 
@@ -219,7 +223,7 @@ public class JCFUserService extends ErrorMessageService implements UserService {
             }
         } else {
             // null(empty)에 대한 에러 메시지
-            printErrorMessage("activateUser");
+            printErrorMessage();
         }
     }
 
@@ -229,16 +233,16 @@ public class JCFUserService extends ErrorMessageService implements UserService {
         Optional<User> u = getUserById(id);
         if (u.isPresent()) {
             User user = u.get();
-            if(user.getStatus() == User.Status.ACTIVE){
+            if (user.getStatus() == User.Status.ACTIVE) {
                 user.setStatus(User.Status.SLEEP);
                 user.setUpdatedAt(System.currentTimeMillis());
             } else {
                 // BANNED, SLEEP, QUIT 에러 메시지
-                printErrorMessage("deactivateUserById");
+                printErrorMessage();
             }
         } else {
             // null(empty)에 대한 에러 메시지
-            printErrorMessage("deactivateUserById");
+            printErrorMessage();
         }
     }
 }

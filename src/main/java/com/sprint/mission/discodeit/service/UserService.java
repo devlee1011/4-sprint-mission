@@ -14,7 +14,7 @@ public interface UserService {
 
     // default 유저
     public User temp();
-    
+
     // Read
     public List<User> getUsers();
 

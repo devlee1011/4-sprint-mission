@@ -124,7 +124,7 @@ public class JavaApplication extends EntityPrinter {
         channel1.ifPresent(c -> userService.joinChannel(user2.getId(), c));
         printService(user1, PrintCode.CHANNEL);
         printService(user1, PrintCode.MESSAGE);
-        
+
         // 채널 나가기
         channel1.ifPresent(c -> userService.outChannel(user2.getId(), c));
         printService(user1, PrintCode.CHANNEL);
@@ -148,7 +148,7 @@ public class JavaApplication extends EntityPrinter {
         channel1.ifPresent(c -> printService(c, PrintCode.USER));
 
         message4.ifPresent(m -> printService(m, PrintCode.MESSAGE));
-        
+
         System.out.println("\n////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
         System.out.println("<동시성 테스트: update>\n");
         System.out.println("\n////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
@@ -180,12 +180,12 @@ public class JavaApplication extends EntityPrinter {
         // user1(캔따개)가 메시지 생성(message6, message7)
         Optional<Message> message6 = channel4.flatMap(c -> messageService.addMessage(user1, c, "아이스 아메리카노 1잔 주세요."));
         Optional<Message> message7 = channel4.flatMap(c -> messageService.addMessage(user1, c, "크로플도 1개 주세요."));
-        
+
         // user4(김코드) 생성, channel4(카페) 참가, message8 생성
         User user4 = userService.addUser("김코드").orElse(userService.temp());
         channel4.ifPresent(c -> userService.joinChannel(user4.getId(), c));
         Optional<Message> message8 = channel4.flatMap(c -> messageService.addMessage(user4, c, "따뜻한 아메리카노 1잔 주세요."));
-        
+
         // channel4, user1, user4의 메시지 조회
         channel4.ifPresent(c -> printService(c, PrintCode.MESSAGE));
         printService(user1, PrintCode.MESSAGE);
@@ -248,40 +248,52 @@ public class JavaApplication extends EntityPrinter {
         User user5 = userService.addUser("").orElse(userService.temp());
 
         // error: 비활성화된 채널은 참가 불가, 메시지 전송도 불가
+        System.out.println("\n<비활성 채널 에러 테스트>");
         channel4.ifPresent(c -> userService.joinChannel(user5.getId(), c));
         channel4.ifPresent(c -> userService.outChannel(user5.getId(), c));
-        
+
         Optional<Message> message11 = channel4.flatMap(c -> messageService.addMessage(user5, c, "비활성 채널 메시지 테스트"));
 
         // error: 비활성화된 회원은 채널 참가, 메시지 작성 등 불가 (BANNED, SLEEP, QUIT)
+        System.out.println("\n<비활성 회원 에러 테스트>");
         userService.updateUserStatusById(user5.getId(), User.Status.SLEEP);
         userService.updateUserById(user5.getId(), "이불");
-        
+
         channel1.ifPresent(c -> userService.joinChannel(user5.getId(), c));
         Optional<Message> message12 = channel1.flatMap(c -> messageService.addMessage(user5, c, "쿨쿨"));
 
-        // error: 탈퇴한 회원은 재활성화 불가능. user4(김코드): QUIT
+        System.out.println("\n////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
+        // 활성화 기능 테스트
+        // user5: SLEEP(휴면) -> ACTIVE(활성)
         System.out.println("\n<Activate 기능 테스트>");
-        userService.activateUserById(user4.getId());
         userService.activateUserById(user5.getId());
+        System.out.println("user5(\"" + user5.getUserName() + "\")의 상태: " + user5.getStatus());
 
+        // error: 탈퇴한 회원, 이미 활성화된 회원은 재활성화 불가능. user4(김코드): QUIT, user1(이지현): ACTIVE
+        System.out.println("\n<Activate 기능 에러 테스트>");
+        userService.activateUserById(user4.getId());
+        userService.activateUserById(user1.getId());
 
+        System.out.println("\n////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
+        // 탈퇴 회원(QUIT) 테스트
         // error: 탈퇴한 회원은 채널을 생성하거나, 메시지를 전송할 수 없음. user4(김코드): QUIT
-        System.out.println("\n<비활성화 회원 테스트>");
+        System.out.println("\n<탈퇴 회원(QUIT) 테스트>");
         Optional<Channel> channel5 = channelService.addChannel("김코드님의 채널", user4);
         Optional<Message> message10 = channel5.flatMap(c -> messageService.addMessage(user4, c, "신나는 음악을 들어요"));
-        
+
         // 추가 안됨(채널, 메시지) (channel5(김코드님의 채널), message10(신나는 음악을 들어요))
         System.out.println("<channel5(김코드님의 채널) 추가 실패>\n" + channelService.getChannels() + "\n");
         System.out.println("<message10(신나는 음악을 들어요)이 추가 실패>\n" + messageService.getMessages());
 
+
+        System.out.println("\n////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
         // user6(guest)의 Status가 deactivateUserById()로 인해 SLEEP으로 전환됨.
         System.out.println("\n<enum 타입 테스트: deactivateUserById() 테스트>");
         User user6 = userService.addUser("").orElse(userService.temp());
         printService(user6, PrintCode.USER);
 
         userService.deactivateUserById(user6.getId());
-        System.out.println(user6.getStatus());
+        System.out.println("user6(\"" + user6.getUserName() + "\")의 상태: " + user6.getStatus());
 
         // error: ACTIVE가 아닌 회원(BANNED, SLEEP, QUIT)은 채널 참가, 유저 정보 업데이트 등 서비스 이용 불가능
         //channel1.ifPresent(c -> userService.joinChannel(user6.getId(), c));
