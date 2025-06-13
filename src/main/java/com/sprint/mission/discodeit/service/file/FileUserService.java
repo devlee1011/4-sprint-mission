@@ -60,7 +60,7 @@ public class FileUserService implements UserService {
 
     // Channel join/out
     public void joinChannelOnlyActiveUser(User user, Channel channel) {
-        if (!DetectUtility.detectJoinChannel(user, channel)) {
+        if (!detectJoinChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -68,10 +68,22 @@ public class FileUserService implements UserService {
     }
 
     public void outChannelOnlyActiveUser(User user, Channel channel) {
-        if (!DetectUtility.detectOutChannel(user, channel)) {
+        if (!detectOutChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
         fileUserRepository.outChannel(user, channel);
+    }
+
+    public static boolean detectJoinChannel(User user, Channel channel) {
+        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
+        boolean notJoined = !user.getChannels().contains(channel);
+        return detected && notJoined;
+    }
+
+    public static boolean detectOutChannel(User user, Channel channel) {
+        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
+        boolean joined = user.getChannels().contains(channel);
+        return detected && joined;
     }
 }

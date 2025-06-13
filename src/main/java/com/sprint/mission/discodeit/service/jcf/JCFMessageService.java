@@ -17,7 +17,7 @@ public class JCFMessageService implements MessageService {
 
     // Create
     public Message createMessage(String contents, User user, Channel channel) {
-        if(!DetectUtility.detectMessageCreate(contents,user,channel)){
+        if(!detectMessageCreate(contents,user,channel)){
             throw new RuntimeException("Invalid contents or user or channel");
         }
         return jcfMessageRepository.create(contents, user, channel);
@@ -34,7 +34,7 @@ public class JCFMessageService implements MessageService {
 
     // Update
     public void updateMessageContentsByMessage(Message message, User user, String newContents) {
-        if (!DetectUtility.detectMessageUpdate(message, user, newContents)) {
+        if (!detectMessageUpdate(message, user, newContents)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -43,7 +43,7 @@ public class JCFMessageService implements MessageService {
 
     // Delete
     public void deleteMessageByMessage(Message message, User user, Channel channel) {
-        if (!DetectUtility.detectMessageDelete(message, user, channel)) {
+        if (!detectMessageDelete(message, user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -54,4 +54,31 @@ public class JCFMessageService implements MessageService {
         jcfMessageRepository.deleteAll();
     }
 
+    public static boolean detectMessageCreate(String contents, User user, Channel channel) {
+        boolean detected = DetectUtility.detect(contents, user, channel);
+        boolean matches = user.getChannels().contains(channel) && channel.getUsers().contains(user);
+        return detected && matches;
+    }
+
+    public static boolean detectMessageUpdate(Message message, User user, String newContents) {
+        boolean detected = DetectUtility.detect(message) && DetectUtility.detect(newContents, user);
+        boolean matches = message.getUser().getId().equals(user.getId());
+        if (detected && matches) {
+            return true;
+        } else {
+            ErrorMessageUtility.printErrorMessage();
+            return false;
+        }
+    }
+
+    public static boolean detectMessageDelete(Message message, User user, Channel channel) {
+        boolean detected = DetectUtility.detect(message) && DetectUtility.detect(user) && DetectUtility.detect(channel);
+        boolean matches = message.getUser().getId().equals(user.getId()) && message.getChannel().getId().equals(channel.getId());
+        if (detected && matches) {
+            return true;
+        } else {
+            ErrorMessageUtility.printErrorMessage();
+            return false;
+        }
+    }
 }

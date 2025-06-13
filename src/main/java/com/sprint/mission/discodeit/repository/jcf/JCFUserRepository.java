@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.domain.UserType;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
 
 import java.util.ArrayList;
@@ -86,5 +87,17 @@ public class JCFUserRepository implements UserRepository {
         }
         user.outFromChannel(channel);
         channel.removeUserByUserIdFromActiveChannel(user.getId());
+    }
+
+    public static boolean detectJoinChannel(User user, Channel channel) {
+        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
+        boolean notJoined = !user.getChannels().contains(channel);
+        return detected && notJoined;
+    }
+
+    public static boolean detectOutChannel(User user, Channel channel) {
+        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
+        boolean joined = user.getChannels().contains(channel);
+        return detected && joined;
     }
 }

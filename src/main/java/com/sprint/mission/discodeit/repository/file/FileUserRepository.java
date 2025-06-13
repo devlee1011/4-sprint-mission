@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileService;
+import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
 
 import java.io.File;
