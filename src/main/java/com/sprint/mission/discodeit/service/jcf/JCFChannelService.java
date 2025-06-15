@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.utility.ChannelValidator;
 import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
 
@@ -49,7 +50,7 @@ public class JCFChannelService implements ChannelService {
     // Delete
     @Override
     public void deleteChannelByChannelAndHostUser(Channel channel, User hostUser) {
-        if (!detectChannelDelete(channel, hostUser)) {
+        if (!ChannelValidator.detectChannelDelete(channel, hostUser)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -59,11 +60,5 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteAllChannels() {
         jcfChannelRepository.deleteAll();
-    }
-
-    private boolean detectChannelDelete(Channel channel, User hostUser) {
-        boolean detected = DetectUtility.detect(channel) && DetectUtility.detect(hostUser);
-        boolean matches = channel.getHostUserId().equals(hostUser.getId());
-        return detected && matches;
     }
 }

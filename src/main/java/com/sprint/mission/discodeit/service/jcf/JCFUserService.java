@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
+import com.sprint.mission.discodeit.service.utility.UserValidator;
 
 import java.util.List;
 import java.util.UUID;
@@ -71,7 +72,7 @@ public class JCFUserService implements UserService {
     // 채널 참가
     @Override
     public void joinChannelOnlyActiveUser(User user, Channel channel) {
-        if (!detectJoinChannel(user, channel)) {
+        if (!UserValidator.detectJoinChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -81,22 +82,10 @@ public class JCFUserService implements UserService {
     // 채널 나가기
     @Override
     public void outChannelOnlyActiveUser(User user, Channel channel) {
-        if (!detectOutChannel(user, channel)) {
+        if (!UserValidator.detectOutChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
         jcfUserRepository.outChannel(user, channel);
-    }
-
-    private boolean detectJoinChannel(User user, Channel channel) {
-        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
-        boolean notJoined = !user.getChannels().contains(channel);
-        return detected && notJoined;
-    }
-
-    private boolean detectOutChannel(User user, Channel channel) {
-        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
-        boolean joined = user.getChannels().contains(channel);
-        return detected && joined;
     }
 }

@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
+import com.sprint.mission.discodeit.service.utility.UserValidator;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ public class FileUserService implements UserService {
     private static final FileUserRepository fileUserRepository = new FileUserRepository();
 
     // Create
+    @Override
     public User createUser(String name) {
         if (!DetectUtility.detect(name)) {
             name = "guest";
@@ -26,15 +28,18 @@ public class FileUserService implements UserService {
     }
 
     // Read
+    @Override
     public List<User> getUsers() {
         return fileUserRepository.getAll();
     }
 
+    @Override
     public User getUserById(UUID id) {
         return fileUserRepository.getById(id);
     }
 
     // Update
+    @Override
     public void updateActiveUserNameByUser(User user, String name) {
         if (!DetectUtility.detect(name, user)) {
             ErrorMessageUtility.printErrorMessage();
@@ -43,45 +48,38 @@ public class FileUserService implements UserService {
         fileUserRepository.updateName(user, name);
     }
 
+    @Override
     public void updateUserStatusByUserExceptQuitUser(User user, UserType.UserStatus userStatus) {
         fileUserRepository.updateStatus(user, userStatus);
     }
 
     // Delete
+    @Override
     public void deleteUserByUser(User user) {
         fileUserRepository.delete(user);
     }
 
+    @Override
     public void deleteAllUsers() {
         fileUserRepository.deleteAll();
     }
 
     // Channel join/out
+    @Override
     public void joinChannelOnlyActiveUser(User user, Channel channel) {
-        if (!detectJoinChannel(user, channel)) {
+        if (!UserValidator.detectJoinChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
         fileUserRepository.joinChannel(user, channel);
     }
 
+    @Override
     public void outChannelOnlyActiveUser(User user, Channel channel) {
-        if (!detectOutChannel(user, channel)) {
+        if (!UserValidator.detectOutChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
         fileUserRepository.outChannel(user, channel);
-    }
-
-    private boolean detectJoinChannel(User user, Channel channel) {
-        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
-        boolean notJoined = !user.getChannels().contains(channel);
-        return detected && notJoined;
-    }
-
-    private boolean detectOutChannel(User user, Channel channel) {
-        boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
-        boolean joined = user.getChannels().contains(channel);
-        return detected && joined;
     }
 }

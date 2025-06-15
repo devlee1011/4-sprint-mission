@@ -5,8 +5,8 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
+import com.sprint.mission.discodeit.service.utility.MessageValidator;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +18,7 @@ public class JCFMessageService implements MessageService {
     // Create
     @Override
     public Message createMessage(String contents, User user, Channel channel) {
-        if(!detectMessageCreate(contents,user,channel)){
+        if(!MessageValidator.detectMessageCreate(contents,user,channel)){
             throw new RuntimeException("Invalid contents or user or channel");
         }
         Message message = new Message(contents, user, channel);
@@ -40,7 +40,7 @@ public class JCFMessageService implements MessageService {
     // Update
     @Override
     public void updateMessageContentsByMessage(Message message, User user, String newContents) {
-        if (!detectMessageUpdate(message, user, newContents)) {
+        if (!MessageValidator.detectMessageUpdate(message, user, newContents)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -50,7 +50,7 @@ public class JCFMessageService implements MessageService {
     // Delete
     @Override
     public void deleteMessageByMessage(Message message, User user, Channel channel) {
-        if (!detectMessageDelete(message, user, channel)) {
+        if (!MessageValidator.detectMessageDelete(message, user, channel)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -60,34 +60,5 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteAllMessages() {
         jcfMessageRepository.deleteAll();
-    }
-
-
-    private boolean detectMessageCreate(String contents, User user, Channel channel) {
-        boolean detected = DetectUtility.detect(contents, user, channel);
-        boolean matches = user.getChannels().contains(channel) && channel.getUsers().contains(user);
-        return detected && matches;
-    }
-
-    private boolean detectMessageUpdate(Message message, User user, String newContents) {
-        boolean detected = DetectUtility.detect(message) && DetectUtility.detect(newContents, user);
-        boolean matches = message.getUser().getId().equals(user.getId());
-        if (detected && matches) {
-            return true;
-        } else {
-            ErrorMessageUtility.printErrorMessage();
-            return false;
-        }
-    }
-
-    private boolean detectMessageDelete(Message message, User user, Channel channel) {
-        boolean detected = DetectUtility.detect(message) && DetectUtility.detect(user) && DetectUtility.detect(channel);
-        boolean matches = message.getUser().getId().equals(user.getId()) && message.getChannel().getId().equals(channel.getId());
-        if (detected && matches) {
-            return true;
-        } else {
-            ErrorMessageUtility.printErrorMessage();
-            return false;
-        }
     }
 }
