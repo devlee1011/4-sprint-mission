@@ -5,10 +5,22 @@ import com.sprint.mission.discodeit.domain.UserType;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.ServiceFactory;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 
 
 public class JavaApplication {
@@ -213,5 +225,187 @@ public class JavaApplication {
         System.out.println("\n<JCF All Delete - Message>");
         jcfMessageService.deleteAllMessages();
         System.out.println(jcfMessageService.getMessages());
+
+        // Basic Service
+        System.out.println("\n<Basic Service Create>");
+        // File Repository
+        UserRepository fileUserRepository = new FileUserRepository();
+        ChannelRepository fileChannelRepository = new FileChannelRepository();
+        MessageRepository fileMessageRepository = new FileMessageRepository();
+
+        // JCF Repository
+        UserRepository jcfUserRepository = new JCFUserRepository();
+        ChannelRepository jcfChannelRepository = new JCFChannelRepository();
+        MessageRepository jcfMessageRepository = new JCFMessageRepository();
+
+        // File Basic Service
+        BasicUserService basicFileUserService = new BasicUserService(fileUserRepository);
+        BasicChannelService basicFileChannelService = new BasicChannelService(fileChannelRepository);
+        BasicMessageService basicFileMessageService = new BasicMessageService(fileMessageRepository);
+
+        // JCF Basic Service
+        BasicUserService basicJCFUserService = new BasicUserService(jcfUserRepository);
+        BasicChannelService basicJCFChannelService = new BasicChannelService(jcfChannelRepository);
+        BasicMessageService basicJCFMessageService = new BasicMessageService(jcfMessageRepository);
+
+
+        System.out.println("\n<Basic Create>");
+        System.out.println("\n<File Create>");
+        // User
+        User basicFileUser1 = basicFileUserService.createUser("basicFileUser1");
+        User basicFileUser2 = basicFileUserService.createUser("basicFileUser2");
+        User basicFileUser3 = basicFileUserService.createUser("basicFileUser3");
+
+        // Channel
+        Channel basicFileChannel1 = basicFileChannelService.createChannel("basicFileChannel1", basicFileUser1);
+        Channel basicFileChannel2 = basicFileChannelService.createChannel("basicFileChannel2", basicFileUser1);
+        Channel basicFileChannel3 = basicFileChannelService.createChannel("basicFileChannel3", basicFileUser3);
+
+        // Message
+        Message basicFileMessage1 = basicFileMessageService.createMessage("basicFileMessage1", basicFileUser1, basicFileChannel1);
+
+
+        System.out.println("\n<JCF Create>");
+        // User
+        User basicJCFUser1 = basicJCFUserService.createUser("basicJCFUser1");
+        User basicJCFUser2 = basicJCFUserService.createUser("basicJCFUser2");
+        User basicJCFUser3 = basicJCFUserService.createUser("basicJCFUser3");
+
+        // Channel
+        Channel basicJCFChannel1 = basicJCFChannelService.createChannel("basicJCFChannel1", basicJCFUser1);
+        Channel basicJCFChannel2 = basicJCFChannelService.createChannel("basicJCFChannel2", basicJCFUser1);
+        Channel basicJCFChannel3 = basicJCFChannelService.createChannel("basicJCFChannel3", basicJCFUser3);
+
+        // Message
+        Message basicJCFMessage1 = basicJCFMessageService.createMessage("basicJCFMessage1", basicJCFUser1, basicJCFChannel1);
+
+
+        System.out.println("\n<Basic Read>");
+        System.out.println("\n<File Read>");
+        // getAll
+        System.out.println(basicFileUserService.getUsers());
+        System.out.println(basicFileChannelService.getChannels());
+        System.out.println(basicFileMessageService.getMessages());
+
+        // getById
+        System.out.println(basicFileUserService.getUserById(basicFileUser1.getId()));
+        System.out.println(basicFileChannelService.getChannelById(basicFileChannel1.getId()));
+        System.out.println(basicFileMessageService.getMessageById(basicFileMessage1.getId()));
+
+        System.out.println("\n<JCF Read>");
+        // getAll
+        System.out.println(basicJCFUserService.getUsers());
+        System.out.println(basicJCFChannelService.getChannels());
+        System.out.println(basicJCFMessageService.getMessages());
+
+        // getById
+        System.out.println(basicJCFUserService.getUserById(basicJCFUser1.getId()));
+        System.out.println(basicJCFChannelService.getChannelById(basicJCFChannel1.getId()));
+        System.out.println(basicJCFMessageService.getMessageById(basicJCFMessage1.getId()));
+
+        System.out.println("\n<Basic Update>");
+        System.out.println("\n<File Update>");
+        // User
+        basicFileUserService.updateActiveUserNameByUser(basicFileUser1, "myFirstBasicFileUser");
+        System.out.println(basicFileUserService.getUserById(basicFileUser1.getId()));
+
+        // Channel
+        basicFileChannelService.updateChannelNameByChannel(basicFileChannel1, "myFirstBasicFileChannel");
+        System.out.println(basicFileChannelService.getChannelById(basicFileChannel1.getId()));
+
+        // Message
+        basicFileMessageService.updateMessageContentsByMessage(basicFileMessage1, basicFileUser1, "myFirstBasicFileMessage");
+        System.out.println(basicFileMessageService.getMessageById(basicFileMessage1.getId()));
+
+
+        System.out.println("\n<JCF Update>");
+        // User
+        basicJCFUserService.updateActiveUserNameByUser(basicJCFUser1, "myFirstJCFUser");
+        System.out.println(basicJCFUserService.getUserById(basicJCFUser1.getId()));
+
+        // Channel
+        basicJCFChannelService.updateChannelNameByChannel(basicJCFChannel1, "myFirstJCFChannel");
+        System.out.println(basicJCFChannelService.getChannelById(basicJCFChannel1.getId()));
+
+        // Message
+        basicJCFMessageService.updateMessageContentsByMessage(basicJCFMessage1, basicJCFUser1, "myFirstJCFMessage");
+        System.out.println(basicJCFMessageService.getMessageById(basicJCFMessage1.getId()));
+
+        System.out.println("\n<Basic Delete>");
+        System.out.println("\n<File Delete>");
+        // User
+        basicFileUserService.deleteUserByUser(basicFileUser2);
+        System.out.println(basicFileUserService.getUsers());
+
+        // Channel
+        basicFileChannelService.deleteChannelByChannelAndHostUser(basicFileChannel2, basicFileUser1);
+        System.out.println(basicFileChannelService.getChannels());
+
+        // Message
+        basicFileMessageService.deleteMessageByMessage(basicFileMessage1, basicFileUser1, basicFileChannel1);
+        System.out.println(basicFileMessageService.getMessages());
+
+        System.out.println("\n<JCF Delete>");
+        // User
+        basicJCFUserService.deleteUserByUser(basicJCFUser2);
+        System.out.println(basicJCFUserService.getUsers());
+
+        // Channel
+        basicJCFChannelService.deleteChannelByChannelAndHostUser(basicJCFChannel2, basicJCFUser1);
+        System.out.println(basicJCFChannelService.getChannels());
+
+        // Message
+        basicJCFMessageService.deleteMessageByMessage(basicJCFMessage1, basicJCFUser1, basicJCFChannel1);
+        System.out.println(basicJCFMessageService.getMessages());
+
+        System.out.println("\n<Basic Concurrency>");
+        System.out.println("\n<File Concurrency>");
+        // User
+        basicFileUserService.joinChannelOnlyActiveUser(basicFileUser1, basicFileChannel3);
+        basicFileUserService.updateActiveUserNameByUser(basicFileUser3, "myThirdBasicFileUser");
+        System.out.println("\"" + basicFileChannel3.getChannelName() + "\"에 접속한 유저 목록: " + basicFileChannelService.getChannelById(basicFileChannel3.getId()).getUsers());
+
+        // Channel
+        basicFileChannelService.updateChannelNameByChannel(basicFileChannel3, "myThirdBasicFileChannel");
+        System.out.println("\n\"" + basicFileUser1.getUserName() + "\"님이 가입한 채널 목록: " + basicFileUserService.getUserById(basicFileUser1.getId()).getChannels());
+        System.out.println("\"" + basicFileUser3.getUserName() + "\"님이 가입한 채널 목록: " + basicFileUserService.getUserById(basicFileUser3.getId()).getChannels());
+        
+        
+        // Message
+        Message basicFileMessage2 = basicFileMessageService.createMessage("basicFileMessage2", basicFileUser1, basicFileChannel3);
+        Message basicFileMessage3 = basicFileMessageService.createMessage("basicFileMessage3", basicFileUser3, basicFileChannel3);
+        basicFileMessageService.updateMessageContentsByMessage(basicFileMessage2, basicFileUser1, "mySecondBasicFileMessage");
+        System.out.println("\n\"" + basicFileChannel3.getChannelName() + "\"에 작성된 메시지 목록: " + basicFileChannelService.getChannelById(basicFileChannel3.getId()).getMessages());
+        System.out.println("\"" + basicFileUser1.getUserName() + "\"님이 작성하신 메시지 목록: " + basicFileUserService.getUserById(basicFileUser1.getId()).getMessages());
+
+        // outChannel
+        basicFileUserService.outChannelOnlyActiveUser(basicFileUser1, basicFileChannel3);
+        System.out.println("\"" + basicFileChannel3.getChannelName() + "\"에 접속한 유저 목록: " + basicFileChannelService.getChannelById(basicFileChannel3.getId()).getUsers());
+        System.out.println("\n\"" + basicFileChannel3.getChannelName() + "\"에 작성된 메시지 목록: " + basicFileChannelService.getChannelById(basicFileChannel3.getId()).getMessages());
+        System.out.println("\"" + basicFileUser1.getUserName() + "\"님이 작성하신 메시지 목록: " + basicFileUserService.getUserById(basicFileUser1.getId()).getMessages());
+        
+        System.out.println("\n<JCF Concurrency>");
+        // User
+        basicJCFUserService.joinChannelOnlyActiveUser(basicJCFUser1, basicJCFChannel3);
+        basicJCFUserService.updateActiveUserNameByUser(basicJCFUser3, "myThirdBasicJCFUser");
+        System.out.println("\"" + basicJCFChannel3.getChannelName() + "\"에 접속한 유저 목록: " + basicJCFChannelService.getChannelById(basicJCFChannel3.getId()).getUsers());
+
+        // Channel
+        basicJCFChannelService.updateChannelNameByChannel(basicJCFChannel3, "myThirdBasicJCFChannel");
+        System.out.println("\n\"" + basicJCFUser1.getUserName() + "\"님이 가입한 채널 목록: " + basicJCFUserService.getUserById(basicJCFUser1.getId()).getChannels());
+        System.out.println("\"" + basicJCFUser3.getUserName() + "\"님이 가입한 채널 목록: " + basicJCFUserService.getUserById(basicJCFUser3.getId()).getChannels());
+
+        // Message
+        Message basicJCFMessage2 = basicJCFMessageService.createMessage("basicJCFMessage2", basicJCFUser1, basicJCFChannel3);
+        Message basicJCFMessage3 = basicJCFMessageService.createMessage("basicJCFMessage3", basicJCFUser3, basicJCFChannel3);
+        basicJCFMessageService.updateMessageContentsByMessage(basicJCFMessage2, basicJCFUser1, "mySecondBasicJCFMessage");
+        System.out.println("\n\"" + basicJCFChannel3.getChannelName() + "\"에 작성된 메시지 목록: " + basicJCFChannelService.getChannelById(basicJCFChannel3.getId()).getMessages());
+        System.out.println("\"" + basicJCFUser1.getUserName() + "\"님이 작성하신 메시지 목록: " + basicJCFUserService.getUserById(basicJCFUser1.getId()).getMessages());
+
+        // outChannel
+        basicJCFUserService.outChannelOnlyActiveUser(basicJCFUser1, basicJCFChannel3);
+        System.out.println("\n\"" + basicJCFChannel3.getChannelName() + "\"에 접속한 유저 목록: " + basicJCFChannelService.getChannelById(basicJCFChannel3.getId()).getUsers());
+        System.out.println("\"" + basicJCFChannel3.getChannelName() + "\"에 작성된 메시지 목록: " + basicJCFChannelService.getChannelById(basicJCFChannel3.getId()).getMessages());
+        System.out.println("\"" + basicJCFUser1.getUserName() + "\"님이 작성하신 메시지 목록: " + basicJCFUserService.getUserById(basicJCFUser1.getId()).getMessages());
     }
 }

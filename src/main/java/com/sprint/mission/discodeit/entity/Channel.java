@@ -74,6 +74,8 @@ public class Channel extends BaseEntity implements Serializable {
                 "channelName='" + channelName + '\'' +
                 ", hostUserId=" + hostUserId +
                 ", channelStatus=" + channelStatus +
+                ", createdAt=" + super.getCreatedAt() +
+                ", updatedAt=" + super.getUpdatedAt() +
                 "}\n";
     }
 

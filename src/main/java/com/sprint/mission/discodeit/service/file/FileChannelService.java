@@ -24,7 +24,6 @@ public class FileChannelService implements ChannelService {
         }
         Channel channel = new Channel(name, hostUser.getId());
         fileChannelRepository.addChannelAndSave(channel,hostUser);
-        FileChannelRepository.save();
         return channel;
     }
 

@@ -4,8 +4,6 @@ import com.sprint.mission.discodeit.domain.UserType;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileService;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
 

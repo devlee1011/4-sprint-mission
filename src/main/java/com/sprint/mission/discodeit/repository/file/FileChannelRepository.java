@@ -3,9 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
 
 import java.io.File;
@@ -29,6 +27,7 @@ public class FileChannelRepository implements ChannelRepository {
         hostUser.addChannel(channel);
         channel.addUserToActiveChannel(hostUser);
         channels.add(channel);
+
         save();
         FileUserRepository.save();
     }
