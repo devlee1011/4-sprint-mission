@@ -16,23 +16,29 @@ public class JCFUserService implements UserService {
     private static final JCFUserRepository jcfUserRepository = new JCFUserRepository();
 
     // Create
+    @Override
     public User createUser(String name) {
         if (!DetectUtility.detect(name)) {
             name = "guest";
         }
-        return jcfUserRepository.create(name);
+        User user = new User(name);
+        jcfUserRepository.addUserAndSave(user);
+        return user;
     }
 
     // Read
+    @Override
     public List<User> getUsers() {
         return jcfUserRepository.getAll();
     }
 
+    @Override
     public User getUserById(UUID id) {
         return jcfUserRepository.getById(id);
     }
 
     // Update
+    @Override
     public void updateActiveUserNameByUser(User user, String name) {
         if (!DetectUtility.detect(name, user)) {
             ErrorMessageUtility.printErrorMessage();
@@ -41,6 +47,7 @@ public class JCFUserService implements UserService {
         jcfUserRepository.updateName(user, name);
     }
 
+    @Override
     public void updateUserStatusByUserExceptQuitUser(User user, UserType.UserStatus userStatus) {
         if (user.getStatus() == UserType.UserStatus.QUIT) {
             ErrorMessageUtility.printErrorMessage();
@@ -50,16 +57,19 @@ public class JCFUserService implements UserService {
     }
 
     // Delete
+    @Override
     public void deleteUserByUser(User user) {
         jcfUserRepository.delete(user);
     }
 
+    @Override
     public void deleteAllUsers() {
         jcfUserRepository.deleteAll();
     }
 
     // 참여중인 채널 관련 메서드
     // 채널 참가
+    @Override
     public void joinChannelOnlyActiveUser(User user, Channel channel) {
         if (!detectJoinChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
@@ -69,6 +79,7 @@ public class JCFUserService implements UserService {
     }
 
     // 채널 나가기
+    @Override
     public void outChannelOnlyActiveUser(User user, Channel channel) {
         if (!detectOutChannel(user, channel)) {
             ErrorMessageUtility.printErrorMessage();
@@ -77,13 +88,13 @@ public class JCFUserService implements UserService {
         jcfUserRepository.outChannel(user, channel);
     }
 
-    public static boolean detectJoinChannel(User user, Channel channel) {
+    private boolean detectJoinChannel(User user, Channel channel) {
         boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
         boolean notJoined = !user.getChannels().contains(channel);
         return detected && notJoined;
     }
 
-    public static boolean detectOutChannel(User user, Channel channel) {
+    private boolean detectOutChannel(User user, Channel channel) {
         boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
         boolean joined = user.getChannels().contains(channel);
         return detected && joined;

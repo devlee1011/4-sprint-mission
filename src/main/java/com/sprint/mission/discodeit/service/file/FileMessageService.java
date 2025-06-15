@@ -21,7 +21,9 @@ public class FileMessageService implements MessageService {
         if (!detectMessageCreate(contents, user, channel)) {
             throw new RuntimeException("<실패: 메시지 생성에 실패하였습니다.>");
         }
-        return fileMessageRepository.create(contents, user, channel);
+        Message message = new Message(contents, user, channel);
+        fileMessageRepository.addMessageAndSave(message, user, channel);
+        return message;
     }
 
     // Read
@@ -36,10 +38,6 @@ public class FileMessageService implements MessageService {
     }
 
     // Update
-    public static void updateFileMessage() {
-        fileMessageRepository.update();
-    }
-
     @Override
     public void updateMessageContentsByMessage(Message message, User user, String newContents) {
         if (!detectMessageUpdate(message, user, newContents)) {
@@ -64,13 +62,13 @@ public class FileMessageService implements MessageService {
         fileMessageRepository.deleteAll();
     }
 
-    public static boolean detectMessageCreate(String contents, User user, Channel channel) {
+    public boolean detectMessageCreate(String contents, User user, Channel channel) {
         boolean detected = DetectUtility.detect(contents, user, channel);
         boolean matches = user.getChannels().contains(channel) && channel.getUsers().contains(user);
         return detected && matches;
     }
 
-    public static boolean detectMessageUpdate(Message message, User user, String newContents) {
+    public boolean detectMessageUpdate(Message message, User user, String newContents) {
         boolean detected = DetectUtility.detect(message) && DetectUtility.detect(newContents, user);
         boolean matches = message.getUser().getId().equals(user.getId());
         if (detected && matches) {
@@ -81,7 +79,7 @@ public class FileMessageService implements MessageService {
         }
     }
 
-    public static boolean detectMessageDelete(Message message, User user, Channel channel) {
+    public boolean detectMessageDelete(Message message, User user, Channel channel) {
         boolean detected = DetectUtility.detect(message) && DetectUtility.detect(user) && DetectUtility.detect(channel);
         boolean matches = message.getUser().getId().equals(user.getId()) && message.getChannel().getId().equals(channel.getId());
         if (detected && matches) {

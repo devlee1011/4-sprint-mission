@@ -20,7 +20,9 @@ public class FileUserService implements UserService {
         if (!DetectUtility.detect(name)) {
             name = "guest";
         }
-        return fileUserRepository.create(name);
+        User user = new User(name);
+        fileUserRepository.addUserAndSave(user);
+        return user;
     }
 
     // Read
@@ -33,10 +35,6 @@ public class FileUserService implements UserService {
     }
 
     // Update
-    public static void updateFileUser() {
-        fileUserRepository.update();
-    }
-
     public void updateActiveUserNameByUser(User user, String name) {
         if (!DetectUtility.detect(name, user)) {
             ErrorMessageUtility.printErrorMessage();
@@ -75,13 +73,13 @@ public class FileUserService implements UserService {
         fileUserRepository.outChannel(user, channel);
     }
 
-    public static boolean detectJoinChannel(User user, Channel channel) {
+    private boolean detectJoinChannel(User user, Channel channel) {
         boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
         boolean notJoined = !user.getChannels().contains(channel);
         return detected && notJoined;
     }
 
-    public static boolean detectOutChannel(User user, Channel channel) {
+    private boolean detectOutChannel(User user, Channel channel) {
         boolean detected = DetectUtility.detect(user) && DetectUtility.detect(channel);
         boolean joined = user.getChannels().contains(channel);
         return detected && joined;

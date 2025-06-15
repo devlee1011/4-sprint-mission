@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface MessageRepository {
     // Create
-    public Message create(String contents, User user, Channel channel);
+    public void addMessageAndSave(Message message, User user, Channel channel);
 
     // Read
     public List<Message> getAll();

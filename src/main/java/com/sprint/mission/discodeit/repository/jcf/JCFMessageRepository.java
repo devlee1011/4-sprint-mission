@@ -17,14 +17,10 @@ public class JCFMessageRepository implements MessageRepository {
 
     // Create
     @Override
-    public Message create(String contents, User user, Channel channel) {
-        Message message = new Message(contents, user, channel);
+    public void addMessageAndSave(Message message, User user, Channel channel) {
         messages.add(message);
-
         user.addMessage(message);
         channel.addMessage(message);
-
-        return message;
     }
 
     // Read

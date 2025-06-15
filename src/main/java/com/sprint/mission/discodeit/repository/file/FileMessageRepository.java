@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
-import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
 
 import java.io.File;
@@ -22,7 +19,7 @@ public class FileMessageRepository implements MessageRepository {
 
     private static final Path directory = Paths.get(System.getProperty("user.dir"), "message");
     private static final Path filePath = directory.resolve("message.ser");
-    private static final List<Message> messages = new ArrayList<Message>();
+    private static final List<Message> messages = new ArrayList<>();
 
     public FileMessageRepository() {
         FileService.init(directory);
@@ -30,17 +27,17 @@ public class FileMessageRepository implements MessageRepository {
 
     // Create
     @Override
-    public Message create(String contents, User user, Channel channel) {
-        Message message = new Message(contents, user, channel);
+    public void addMessageAndSave(Message message, User user, Channel channel) {
         messages.add(message);
-
         user.addMessage(message);
         channel.addMessage(message);
 
+        save();
+        synchroWithUserAndChannel();
+    }
+
+    public static void save() {
         FileService.save(filePath, messages);
-        FileUserService.updateFileUser();
-        FileChannelService.updateFileChannel();
-        return message;
     }
 
     // Read
@@ -59,10 +56,6 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     // Update
-    public void update() {
-        FileService.save(filePath, messages);
-    }
-
     @Override
     public void updateContents(Message message, User user, String newContents) {
         if (!messages.contains(message)) {
@@ -72,9 +65,8 @@ public class FileMessageRepository implements MessageRepository {
         message.setMessageContents(newContents);
         message.setUpdatedAt(System.currentTimeMillis());
 
-        FileService.save(filePath, messages);
-        FileUserService.updateFileUser();
-        FileChannelService.updateFileChannel();
+        save();
+        synchroWithUserAndChannel();
     }
 
     // Delete
@@ -90,21 +82,21 @@ public class FileMessageRepository implements MessageRepository {
         message.setUpdatedAt(System.currentTimeMillis());
         messages.remove(message);
 
-        FileService.save(filePath, messages);
-        FileUserService.updateFileUser();
-        FileChannelService.updateFileChannel();
+        save();
+        synchroWithUserAndChannel();
     }
 
     @Override
     public void deleteAll() {
         messages.forEach(message -> {
+                    message.setMessageContents("삭제된 메시지 입니다.");
+                    message.setUpdatedAt(System.currentTimeMillis());
                     message.getUser().getMessages().clear();
                     message.getChannel().getMessages().clear();
-                    FileUserService.updateFileUser();
-                    FileChannelService.updateFileChannel();
                 }
         );
         messages.clear();
+        synchroWithUserAndChannel();
 
         File file = new File(filePath.toUri());
         if (file.delete()) {
@@ -112,5 +104,10 @@ public class FileMessageRepository implements MessageRepository {
         } else {
             System.out.println("<deleteAll() 실패: 전체 메시지 삭제에 실패하였습니다.>");
         }
+    }
+
+    private void synchroWithUserAndChannel() {
+        FileUserRepository.save();
+        FileChannelRepository.save();
     }
 }

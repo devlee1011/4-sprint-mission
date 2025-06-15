@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
-import com.sprint.mission.discodeit.service.utility.DetectUtility;
 import com.sprint.mission.discodeit.service.utility.ErrorMessageUtility;
 
 import java.io.File;
@@ -26,15 +25,16 @@ public class FileChannelRepository implements ChannelRepository {
 
     // Create
     @Override
-    public Channel create(String name, User hostUser) {
-        Channel channel = new Channel(name, hostUser.getId());
-        channels.add(channel);
+    public void addChannelAndSave(Channel channel, User hostUser) {
         hostUser.addChannel(channel);
         channel.addUserToActiveChannel(hostUser);
+        channels.add(channel);
+        save();
+        FileUserRepository.save();
+    }
 
+    public static void save() {
         FileService.save(filePath, channels);
-        FileUserService.updateFileUser();
-        return channel;
     }
 
     // Read
@@ -53,10 +53,6 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     // Update
-    public void update() {
-        FileService.save(filePath, channels);
-    }
-
     @Override
     public void updateChannelName(Channel channel, String name) {
         if (!channels.contains(channel)) {
@@ -66,12 +62,9 @@ public class FileChannelRepository implements ChannelRepository {
 
         channel.setChannelName(name);
         channel.setUpdatedAt(System.currentTimeMillis());
-        FileService.save(filePath, channels);
 
-        if (!channel.getUsers().isEmpty()) {
-            FileUserService.updateFileUser();
-            FileMessageService.updateFileMessage();
-        }
+        save();
+        synchroWithUserAndMessage(channel);
     }
 
     // Delete
@@ -84,9 +77,8 @@ public class FileChannelRepository implements ChannelRepository {
         channel.removeAllUsersAndMessagesFromActiveChannel();
         channels.remove(channel);
 
-        FileService.save(filePath, channels);
-        FileUserService.updateFileUser();
-        FileMessageService.updateFileMessage();
+        save();
+        synchroWithUserAndMessage(channel);
     }
 
     @Override
@@ -94,8 +86,8 @@ public class FileChannelRepository implements ChannelRepository {
         channels.forEach(Channel::removeAllUsersAndMessagesFromActiveChannel);
         channels.clear();
 
-        FileUserService.updateFileUser();
-        FileMessageService.updateFileMessage();
+        FileUserRepository.save();
+        FileMessageRepository.save();
 
         File file = new File(filePath.toUri());
         if (file.delete()) {
@@ -103,5 +95,11 @@ public class FileChannelRepository implements ChannelRepository {
         } else {
             System.out.println("<deleteAll() 실패: 전체 채널 삭제에 실패하였습니다.>");
         }
+    }
+
+    private void synchroWithUserAndMessage(Channel channel) {
+        if (channel.getMessages().isEmpty() && channel.getUsers().isEmpty()) { return; }
+        FileUserRepository.save();
+        FileMessageRepository.save();
     }
 }

@@ -18,10 +18,8 @@ public class JCFUserRepository implements UserRepository {
 
     // Create
     @Override
-    public User create(String name) {
-        User user = new User(name);
+    public void addUserAndSave(User user) {
         users.add(user);
-        return user;
     }
 
     // Read

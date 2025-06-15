@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface UserRepository {
     // Create
-    public User create(String name);
+    public void addUserAndSave(User user);
 
     // Read
     public List<User> getAll();

@@ -19,10 +19,12 @@ public class FileChannelService implements ChannelService {
     @Override
     public Channel createChannel(String name, User hostUser) {
         if (!DetectUtility.detect(name, hostUser)) {
-            ErrorMessageUtility.printErrorMessage();
             throw new RuntimeException("<실패: 채널 생성에 실패하였습니다.>");
         }
-        return fileChannelRepository.create(name, hostUser);
+        Channel channel = new Channel(name, hostUser.getId());
+        fileChannelRepository.addChannelAndSave(channel,hostUser);
+        FileChannelRepository.save();
+        return channel;
     }
 
     // Read
@@ -37,10 +39,6 @@ public class FileChannelService implements ChannelService {
     }
 
     // Update
-    public static void updateFileChannel() {
-        fileChannelRepository.update();
-    }
-
     @Override
     public void updateChannelNameByChannel(Channel channel, String name) {
         if (!DetectUtility.detect(channel) || !DetectUtility.detect(name)) {
@@ -53,7 +51,7 @@ public class FileChannelService implements ChannelService {
     // Delete
     @Override
     public void deleteChannelByChannelAndHostUser(Channel channel, User hostUser) {
-        if (!DetectUtility.detect(channel) || !DetectUtility.detect(hostUser)) {
+        if (detectChannelDelete(channel, hostUser)) {
             ErrorMessageUtility.printErrorMessage();
             return;
         }
@@ -63,5 +61,11 @@ public class FileChannelService implements ChannelService {
     @Override
     public void deleteAllChannels() {
         fileChannelRepository.deleteAll();
+    }
+
+    private boolean detectChannelDelete(Channel channel, User hostUser) {
+        boolean detected = DetectUtility.detect(channel) && DetectUtility.detect(hostUser);
+        boolean matches = channel.getHostUserId().equals(hostUser.getId());
+        return detected && matches;
     }
 }

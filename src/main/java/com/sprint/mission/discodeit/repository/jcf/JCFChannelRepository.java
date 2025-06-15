@@ -11,18 +11,14 @@ import java.util.UUID;
 
 public class JCFChannelRepository implements ChannelRepository {
 
-    private static final List<Channel> channels = new ArrayList<Channel>();
+    private static final List<Channel> channels = new ArrayList<>();
 
     // Create
     @Override
-    public Channel create(String name, User hostUser) {
-        Channel channel = new Channel(name, hostUser.getId());
+    public void addChannelAndSave(Channel channel, User hostUser) {
         channels.add(channel);
-
         channel.addUserToActiveChannel(hostUser);
         hostUser.addChannel(channel);
-
-        return channel;
     }
 
     // Read
