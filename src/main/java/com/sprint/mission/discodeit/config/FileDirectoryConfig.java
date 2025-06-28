@@ -1,19 +1,17 @@
 package com.sprint.mission.discodeit.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.nio.file.Path;
-
 @Configuration
+@AllArgsConstructor
 public class FileDirectoryConfig {
 
-    @Value("${discodeit.repository.file-directory}")
-    private String fileDirectory;
+    private final RepositoryProperties repositoryProperties;
 
     @Bean
     public String getFileDirectory() {
-        return fileDirectory;
+        return repositoryProperties.getFileDirectory();
     }
 }
