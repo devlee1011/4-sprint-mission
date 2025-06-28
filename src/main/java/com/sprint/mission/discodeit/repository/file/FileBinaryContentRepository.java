@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -15,14 +14,14 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
-@Primary
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
     private final Path DIRECTORY;
-    private final String EXTENSION = ".ser";
+    private final String EXTENSION;
 
-    public FileBinaryContentRepository() {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", BinaryContent.class.getSimpleName());
+    public FileBinaryContentRepository(String fileDirectory) {
+        this.EXTENSION = ".ser";
+        this.DIRECTORY = Paths.get(fileDirectory, BinaryContent.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);

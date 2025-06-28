@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -15,14 +14,13 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
-@Primary
 public class FileUserRepository implements UserRepository {
     private final Path DIRECTORY;
     private final String EXTENSION;
 
-    public FileUserRepository() {
+    public FileUserRepository(String fileDirectory) {
         this.EXTENSION = ".ser";
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
+        this.DIRECTORY = Paths.get(fileDirectory, User.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
