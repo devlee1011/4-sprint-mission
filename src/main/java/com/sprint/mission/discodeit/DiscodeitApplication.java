@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.time.Instant;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class DiscodeitApplication {
 
     static UserResponseDto setupUser(UserService userService) {
