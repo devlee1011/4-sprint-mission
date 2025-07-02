@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.baseentity.BaseEntity;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -7,12 +8,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class User implements Serializable {
+public class User extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
     //
     private String username;
     private String email;
@@ -20,9 +17,7 @@ public class User implements Serializable {
     private UUID profileId;     // BinaryContent
 
     public User(String username, String email, String password, UUID profileId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = createdAt;
+        super();
         //
         this.username = username;
         this.email = email;
@@ -51,7 +46,7 @@ public class User implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
+            super.setUpdatedAt(Instant.now());
         }
     }
 }

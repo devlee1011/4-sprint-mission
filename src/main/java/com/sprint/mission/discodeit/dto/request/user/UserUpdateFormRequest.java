@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.request;
+package com.sprint.mission.discodeit.dto.request.user;
 
 import com.sprint.mission.discodeit.validator.NoBlankIfPresent;
 import com.sprint.mission.discodeit.validator.RequiredMultipartFileIfPresent;

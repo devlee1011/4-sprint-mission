@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.MessageCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.message.MessageCreateFormRequest;
+import com.sprint.mission.discodeit.dto.request.message.MessageUpdateFormRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class BasicMessageService implements MessageService {
         UUID channelId = messageCreateFormRequest.getChannelId();
         UUID authorId = messageCreateFormRequest.getAuthorId();
         
-        // 채널과 유저 유효성 검사    
+        // 채널, 유저 유효성 검사
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널 아이디에 해당하는 채널이 없습니다."));
 
@@ -40,12 +39,12 @@ public class BasicMessageService implements MessageService {
         
         // 비공개 채널 유효성 검사; 가입된 유저만 메시지 작성 가능
         if (channel.getType() == ChannelType.PRIVATE) {
-            List<UUID> userIds = Optional.of(readStatusRepository.findAllByChannelId(channelId).stream()
+            List<UUID> participantsIds = Optional.ofNullable(readStatusRepository.findAllByChannelId(channelId).stream()
                     .map(ReadStatus::getUserId))
                     .map(Stream::toList)
                     .orElseThrow(() -> new IllegalArgumentException("참여자가 없는 비공개 채널에 메시지를 보낼 수 없습니다."));
 
-           if (!userIds.contains(authorId)) {
+           if (!participantsIds.contains(authorId)) {
                throw new IllegalArgumentException("참여하지 않은 비공개 채널에 메시지를 보낼 수 없습니다.");
            }
         }
@@ -69,8 +68,7 @@ public class BasicMessageService implements MessageService {
                 })
                 .toList();
 
-        String content = messageCreateFormRequest.getContent();
-        Message message = messageCreateFormRequest.toMessage(content, channelId, authorId, nullableAttachmentIds);
+        Message message = messageCreateFormRequest.toMessage(nullableAttachmentIds);
         return messageRepository.save(message);
     }
 
@@ -87,8 +85,8 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, MessageUpdateRequest request) {
-        String newContent = request.newContent();
+    public Message update(UUID messageId, MessageUpdateFormRequest request) {
+        String newContent = request.getNewContent();
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
         message.update(newContent);

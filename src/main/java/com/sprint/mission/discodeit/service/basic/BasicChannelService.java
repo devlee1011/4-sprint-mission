@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.ChannelDto;
-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateFormRequest;
+import com.sprint.mission.discodeit.dto.response.ChannelDto;
+import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateFormRequest;
+import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateFormRequest;
+import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateFormRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -29,21 +29,21 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
 
     @Override
-    public Channel create(PublicChannelCreateFormRequest request) {
-        String name = request.name();
-        String description = request.description();
+    public Channel create(PublicChannelCreateFormRequest publicChannelCreateFormRequest) {
+        String name = publicChannelCreateFormRequest.getName();
+        String description = publicChannelCreateFormRequest.getDescription();
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
         return channelRepository.save(channel);
     }
 
     @Override
-    public Channel create(PrivateChannelCreateFormRequest request) {
+    public Channel create(PrivateChannelCreateFormRequest privateChannelCreateFormRequest) {
         // UserRepository에 존재 하는 user인지 검사
-        isUserExist(request.participantIds());
-        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+        isUserExist(privateChannelCreateFormRequest.getParticipantIds());
+        Channel channel = privateChannelCreateFormRequest.toPrivateChannel();
         Channel createdChannel = channelRepository.save(channel);
-        request.participantIds().stream()
+        privateChannelCreateFormRequest.getParticipantIds().stream()
                 .map(userId -> {
                     return new ReadStatus(userId, createdChannel.getId(), Instant.MIN);
                 })
@@ -55,15 +55,13 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto find(UUID channelId) {
         return channelRepository.findById(channelId)
-                .map(this::toDto)
+                .map(channel -> ChannelDto.toDto(channel, getParticipantIds(channelId), getLastMessageAt(channelId)))
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
-        if (userRepository.existsById(userId)) {
-
-        }
+        isUserExist(userId);
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
                 .map(ReadStatus::getChannelId)
                 .toList();
@@ -73,15 +71,15 @@ public class BasicChannelService implements ChannelService {
                         channel.getType().equals(ChannelType.PUBLIC)
                                 || mySubscribedChannelIds.contains(channel.getId())
                 )
-                .map(this::toDto)
+                .map(channel -> ChannelDto.toDto(channel, getParticipantIds(channel.getId()), getLastMessageAt(channel.getId())))
                 .toList();
     }
 
     @Override
     public Channel update(UUID channelId, PublicChannelUpdateFormRequest request) {
-        Optional<String> rawName = Optional.ofNullable(request.newName());
-        Optional<String> rawDescription = Optional.ofNullable(request.newDescription());
-        
+        Optional<String> rawName = Optional.ofNullable(request.getNewName());
+        Optional<String> rawDescription = Optional.ofNullable(request.getNewDescription());
+
         // 업데이트 할 값이 있는지 확인..
         if (rawName.isEmpty() && rawDescription.isEmpty()) {
             throw new IllegalArgumentException("Nothing to update");
@@ -97,14 +95,14 @@ public class BasicChannelService implements ChannelService {
         String newName = channel.getName();
         String newDescription = channel.getDescription();
 
-        if (rawName.isPresent()){
-            if (rawName.get().equals(channel.getName())){
+        if (rawName.isPresent()) {
+            if (rawName.get().equals(channel.getName())) {
                 throw new IllegalArgumentException("같은 이름으로 바꿀 수 없습니다.");
             }
             newName = rawName.get();
         }
-        if (rawDescription.isPresent()){
-            if (rawDescription.get().equals(channel.getDescription())){
+        if (rawDescription.isPresent()) {
+            if (rawDescription.get().equals(channel.getDescription())) {
                 throw new IllegalArgumentException("같은 설명으로 바꿀 수 없습니다.");
             }
             newDescription = rawDescription.get();
@@ -125,31 +123,23 @@ public class BasicChannelService implements ChannelService {
         channelRepository.deleteById(channelId);
     }
 
-    private ChannelDto toDto(Channel channel) {
-        Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId())
+    private List<UUID> getParticipantIds(UUID channelId) {
+        List<UUID> participantIds = new ArrayList<>();
+        readStatusRepository.findAllByChannelId(channelId)
+                .stream()
+                .map(ReadStatus::getUserId)
+                .forEach(participantIds::add);
+        return participantIds;
+    }
+
+    private Instant getLastMessageAt(UUID channelId) {
+        return messageRepository.findAllByChannelId(channelId)
                 .stream()
                 .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
                 .map(Message::getCreatedAt)
                 .limit(1)
                 .findFirst()
                 .orElse(Instant.MIN);
-
-        List<UUID> participantIds = new ArrayList<>();
-        if (channel.getType().equals(ChannelType.PRIVATE)) {
-            readStatusRepository.findAllByChannelId(channel.getId())
-                    .stream()
-                    .map(ReadStatus::getUserId)
-                    .forEach(participantIds::add);
-        }
-
-        return new ChannelDto(
-                channel.getId(),
-                channel.getType(),
-                channel.getName(),
-                channel.getDescription(),
-                participantIds,
-                lastMessageAt
-        );
     }
 
     private void isUserExist(UUID userId) {

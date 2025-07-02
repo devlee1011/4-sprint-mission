@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.request.*;
+import com.sprint.mission.discodeit.dto.request.user.UserCreateFormRequest;
+import com.sprint.mission.discodeit.dto.request.user.UserUpdateFormRequest;
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -45,7 +46,7 @@ public class BasicUserService implements UserService {
         Optional<MultipartFile> nullableFile = Optional.ofNullable(userCreateFormRequest.getImage());
         UUID nullableProfileId = saveProfileId(nullableFile, Optional.empty());
 
-        User user = new User(username, email, password, nullableProfileId);
+        User user = userCreateFormRequest.toUser(nullableProfileId);
         User createdUser = userRepository.save(user);
 
         Instant now = Instant.now();
@@ -58,7 +59,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto find(UUID userId) {
         return userRepository.findById(userId)
-                .map(this::toDto)
+                .map(user -> UserDto.toDto(user, isOnlineByUserId(userId)))
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
@@ -66,7 +67,7 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         return userRepository.findAll()
                 .stream()
-                .map(this::toDto)
+                .map(user -> UserDto.toDto(user, isOnlineByUserId(user.getId())))
                 .toList();
     }
 
@@ -124,20 +125,10 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(userId);
     }
 
-    private UserDto toDto(User user) {
-        Boolean online =  userStatusRepository.findByUserId(user.getId())
+    private Boolean isOnlineByUserId(UUID userId) {
+        return userStatusRepository.findByUserId(userId)
                 .map(UserStatus::isOnline)
                 .orElse(null);
-
-        return new UserDto(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getProfileId(),
-                online
-        );
     }
 
     private UUID saveProfileId(Optional<MultipartFile> file, Optional<UUID> profileId) {

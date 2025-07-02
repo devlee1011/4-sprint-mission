@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -21,7 +20,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent create(BinaryContentCreateRequest request) {
-        MultipartFile file = request.file();
+        MultipartFile file = request.getFile();
         String fileName = file.getOriginalFilename();
         String contentType = file.getContentType();
         byte[] bytes = null;

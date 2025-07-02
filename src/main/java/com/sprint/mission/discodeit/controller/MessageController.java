@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.data.MessageDto;
-import com.sprint.mission.discodeit.dto.request.MessageCreateFormRequest;
+import com.sprint.mission.discodeit.dto.response.MessageDto;
+import com.sprint.mission.discodeit.dto.request.message.MessageCreateFormRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
@@ -10,6 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/messages")
@@ -21,8 +25,15 @@ public class MessageController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createMessage(@ModelAttribute @Valid MessageCreateFormRequest messageCreateFormRequest) {
         Message createdMessage = messageService.create(messageCreateFormRequest);
-        MessageDto messageDto = messageCreateFormRequest.toDto(createdMessage);
+        MessageDto messageDto = MessageDto.toDto(createdMessage);
         return ResponseEntity.status(HttpStatus.CREATED).body(messageDto);
+    }
+
+    @GetMapping(value = "/{channel-id}")
+    public ResponseEntity<?> getMessages(@PathVariable("channel-id") UUID channelId) {
+        List<MessageDto> response =  messageService.findAllByChannelId(channelId).stream()
+                .map(MessageDto::toDto).toList();
+        return ResponseEntity.ok(response);
     }
 
 }

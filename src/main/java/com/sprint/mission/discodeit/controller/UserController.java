@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.request.*;
+import com.sprint.mission.discodeit.dto.request.auth.LoginFormRequest;
+import com.sprint.mission.discodeit.dto.request.user.UserCreateFormRequest;
+import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.user.UserUpdateFormRequest;
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -29,7 +32,7 @@ public class UserController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createUser(@ModelAttribute @Valid UserCreateFormRequest userCreateFormRequest) throws IOException {
         User createdUser = userService.create(userCreateFormRequest);
-        UserDto response = userService.find(createdUser.getId());
+        UserDto response = UserDto.toDto(createdUser, isOnlineByUserId(createdUser.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -37,7 +40,7 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable("user-id") UUID id,
                                         @ModelAttribute @Valid UserUpdateFormRequest userUpdateFormRequest) {
         User updatedUser = userService.update(id, userUpdateFormRequest);
-        UserDto response = userService.find(updatedUser.getId());
+        UserDto response = UserDto.toDto(updatedUser, isOnlineByUserId(updatedUser.getId()));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
@@ -58,8 +61,7 @@ public class UserController {
         Instant now = Instant.now();
         UserStatusUpdateRequest userStatusDto = new UserStatusUpdateRequest(now);
         userStatusService.updateByUserId(id, userStatusDto);
-        UserDto response = userService.find(id);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @PostMapping(value = "/login")
@@ -72,7 +74,11 @@ public class UserController {
         UserStatusUpdateRequest userStatusDto = new UserStatusUpdateRequest(loginTime);
         userStatusService.updateByUserId(loginUser.getId(), userStatusDto);
 
-        UserDto response = userService.find(loginUser.getId());
+        UserDto response = UserDto.toDto(loginUser, isOnlineByUserId(loginUser.getId()));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    private Boolean isOnlineByUserId(UUID userId) {
+        return userStatusService.findByUserId(userId).isOnline();
     }
 }

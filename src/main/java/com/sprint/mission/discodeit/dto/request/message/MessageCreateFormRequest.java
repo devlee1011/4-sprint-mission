@@ -1,6 +1,5 @@
-package com.sprint.mission.discodeit.dto.request;
+package com.sprint.mission.discodeit.dto.request.message;
 
-import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.validator.NoEmptyMultipartFile;
 import com.sprint.mission.discodeit.validator.RequiredListIfPresent;
@@ -29,22 +28,12 @@ public class MessageCreateFormRequest {
     private List<@NoEmptyMultipartFile MultipartFile> files;
 
 
-    public Message toMessage(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+    public Message toMessage(List<UUID> attachmentIds) {
             return new Message(
                     content,
                     channelId,
                     authorId,
                     attachmentIds
-            );
-    }
-
-    public MessageDto toDto(Message message) {
-            return new MessageDto(
-                    message.getId(),
-                    message.getContent(),
-                    message.getChannelId(),
-                    message.getAuthorId(),
-                    message.getAttachmentIds()
             );
     }
 }
