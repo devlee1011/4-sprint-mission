@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.exception;
 import com.sprint.mission.discodeit.exception.dto.ErrorResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> methodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<?> methodArgumentNotValidException(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
 
         e.getBindingResult().getFieldErrors().forEach(error -> {
@@ -42,6 +43,13 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, message);
         });
 
-        return ResponseEntity.badRequest().body(errors);
+        ErrorResponseDto.ErrorResponseGroupDto response = new ErrorResponseDto.ErrorResponseGroupDto(HttpStatus.BAD_REQUEST.value(), errors);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> httpMessageNotReadableException(HttpMessageNotReadableException e) {
+        ErrorResponseDto dto = new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        return ResponseEntity.badRequest().body(dto);
     }
 }

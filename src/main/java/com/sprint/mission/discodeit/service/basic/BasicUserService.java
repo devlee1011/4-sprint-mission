@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -26,7 +25,6 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
     //
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
@@ -45,7 +43,7 @@ public class BasicUserService implements UserService {
         }
 
         Optional<MultipartFile> nullableFile = Optional.ofNullable(userCreateFormRequest.getImage());
-        UUID nullableProfileId = getProfileId(nullableFile, Optional.empty());
+        UUID nullableProfileId = saveProfileId(nullableFile, Optional.empty());
 
         User user = new User(username, email, password, nullableProfileId);
         User createdUser = userRepository.save(user);
@@ -60,7 +58,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto find(UUID userId) {
         return userRepository.findById(userId)
-                .map(user -> userMapper.toDto(user, isOnlineByUser(user)))
+                .map(this::toDto)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
@@ -68,7 +66,7 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> userMapper.toDto(user, isOnlineByUser(user)))
+                .map(this::toDto)
                 .toList();
     }
 
@@ -81,9 +79,9 @@ public class BasicUserService implements UserService {
         Optional<String> rawEmail = Optional.ofNullable(userUpdateFormRequest.getNewEmail());
         Optional<String> rawPassword = Optional.ofNullable(userUpdateFormRequest.getNewPassword());
 
-        String newUsername = null;
-        String newEmail = null;
-        String newPassword = null;
+        String newUsername = user.getUsername();
+        String newEmail = user.getEmail();
+        String newPassword = user.getPassword();
 
         if (rawUsername.isPresent()) {
             if (userRepository.existsByUsername(rawUsername.get())) {
@@ -107,7 +105,7 @@ public class BasicUserService implements UserService {
         }
 
         Optional<MultipartFile> nullableFile = Optional.ofNullable(userUpdateFormRequest.getNewProfile());
-        UUID nullableProfileId = getProfileId(nullableFile, Optional.ofNullable(user.getProfileId()));
+        UUID nullableProfileId = saveProfileId(nullableFile, Optional.ofNullable(user.getProfileId()));
 
         user.update(newUsername, newEmail, newPassword, nullableProfileId);
 
@@ -126,14 +124,23 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(userId);
     }
 
-    private Boolean isOnlineByUser(User user) {
-        return userStatusRepository.findByUserId(user.getId())
+    private UserDto toDto(User user) {
+        Boolean online =  userStatusRepository.findByUserId(user.getId())
                 .map(UserStatus::isOnline)
                 .orElse(null);
+
+        return new UserDto(
+                user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileId(),
+                online
+        );
     }
 
-    private UUID getProfileId(Optional<MultipartFile> file, Optional<UUID> profileId) {
-        System.out.println("# BasicUserService: getProfileId");
+    private UUID saveProfileId(Optional<MultipartFile> file, Optional<UUID> profileId) {
         return file.filter(blankableFile -> blankableFile.getSize() > 0)
                 .map(profileRequest -> {
                     profileId.ifPresent(binaryContentRepository::deleteById);

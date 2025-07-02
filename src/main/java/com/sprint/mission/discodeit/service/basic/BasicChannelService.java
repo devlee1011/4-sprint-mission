@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateFormRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateFormRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateFormRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,9 +26,10 @@ public class BasicChannelService implements ChannelService {
     //
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public Channel create(PublicChannelCreateRequest request) {
+    public Channel create(PublicChannelCreateFormRequest request) {
         String name = request.name();
         String description = request.description();
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
@@ -36,12 +38,15 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel create(PrivateChannelCreateRequest request) {
+    public Channel create(PrivateChannelCreateFormRequest request) {
+        // UserRepository에 존재 하는 user인지 검사
+        isUserExist(request.participantIds());
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createdChannel = channelRepository.save(channel);
-
         request.participantIds().stream()
-                .map(userId -> new ReadStatus(userId, createdChannel.getId(), Instant.MIN))
+                .map(userId -> {
+                    return new ReadStatus(userId, createdChannel.getId(), Instant.MIN);
+                })
                 .forEach(readStatusRepository::save);
 
         return createdChannel;
@@ -56,6 +61,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
+        if (userRepository.existsById(userId)) {
+
+        }
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
                 .map(ReadStatus::getChannelId)
                 .toList();
@@ -70,14 +78,38 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
-        String newName = request.newName();
-        String newDescription = request.newDescription();
+    public Channel update(UUID channelId, PublicChannelUpdateFormRequest request) {
+        Optional<String> rawName = Optional.ofNullable(request.newName());
+        Optional<String> rawDescription = Optional.ofNullable(request.newDescription());
+        
+        // 업데이트 할 값이 있는지 확인..
+        if (rawName.isEmpty() && rawDescription.isEmpty()) {
+            throw new IllegalArgumentException("Nothing to update");
+        }
+
+        // ChannelRepository에 저장된 값이 아니며 PRIVATE이 아니면 예외 발생..
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
+
+        String newName = channel.getName();
+        String newDescription = channel.getDescription();
+
+        if (rawName.isPresent()){
+            if (rawName.get().equals(channel.getName())){
+                throw new IllegalArgumentException("같은 이름으로 바꿀 수 없습니다.");
+            }
+            newName = rawName.get();
+        }
+        if (rawDescription.isPresent()){
+            if (rawDescription.get().equals(channel.getDescription())){
+                throw new IllegalArgumentException("같은 설명으로 바꿀 수 없습니다.");
+            }
+            newDescription = rawDescription.get();
+        }
+
         channel.update(newName, newDescription);
         return channelRepository.save(channel);
     }
@@ -118,5 +150,19 @@ public class BasicChannelService implements ChannelService {
                 participantIds,
                 lastMessageAt
         );
+    }
+
+    private void isUserExist(UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User " + userId + " not found");
+        }
+    }
+
+    private void isUserExist(List<UUID> userIds) {
+        for (UUID id : userIds) {
+            if (!userRepository.existsById(id)) {
+                throw new NoSuchElementException("User with id " + id + " not found");
+            }
+        }
     }
 }
