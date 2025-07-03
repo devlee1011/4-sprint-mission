@@ -80,6 +80,9 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new IllegalArgumentException("존재하지 않는 채널 아이디입니다.");
+        }
         return messageRepository.findAllByChannelId(channelId).stream()
                 .toList();
     }

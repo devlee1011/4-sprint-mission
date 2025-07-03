@@ -44,6 +44,10 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus findByUserId(UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " does not exist");
+        }
+
         return userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found"));
     }
@@ -67,6 +71,10 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " does not exist");
+        }
+
         Instant newLastActiveAt = request.getNewLastActiveAt();
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)

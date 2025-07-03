@@ -103,7 +103,7 @@ public class BasicChannelService implements ChannelService {
         }
         if (rawDescription.isPresent()) {
             if (rawDescription.get().equals(channel.getDescription())) {
-                throw new IllegalArgumentException("같은 설명으로 바꿀 수 없습니다.");
+                throw new IllegalArgumentException("바꿀 내용이 없습니다.");
             }
             newDescription = rawDescription.get();
         }
