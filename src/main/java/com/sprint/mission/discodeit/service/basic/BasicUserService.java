@@ -31,10 +31,9 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(UserCreateFormRequest userCreateFormRequest) {
-        String username = userCreateFormRequest.getUsername();
-        String email = userCreateFormRequest.getEmail();
-        String password = userCreateFormRequest.getPassword();
+    public User create(UserCreateFormRequest request) {
+        String username = request.getUsername();
+        String email = request.getEmail();
 
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("User with email " + email + " already exists");
@@ -43,10 +42,10 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("User with username " + username + " already exists");
         }
 
-        Optional<MultipartFile> nullableFile = Optional.ofNullable(userCreateFormRequest.getImage());
+        Optional<MultipartFile> nullableFile = Optional.ofNullable(request.getImage());
         UUID nullableProfileId = saveProfileId(nullableFile, Optional.empty());
 
-        User user = userCreateFormRequest.toUser(nullableProfileId);
+        User user = request.toUser(nullableProfileId);
         User createdUser = userRepository.save(user);
 
         Instant now = Instant.now();
@@ -72,13 +71,13 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, UserUpdateFormRequest userUpdateFormRequest) {
+    public User update(UUID userId, UserUpdateFormRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-        Optional<String> rawUsername = Optional.ofNullable(userUpdateFormRequest.getNewUsername());
-        Optional<String> rawEmail = Optional.ofNullable(userUpdateFormRequest.getNewEmail());
-        Optional<String> rawPassword = Optional.ofNullable(userUpdateFormRequest.getNewPassword());
+        Optional<String> rawUsername = Optional.ofNullable(request.getNewUsername());
+        Optional<String> rawEmail = Optional.ofNullable(request.getNewEmail());
+        Optional<String> rawPassword = Optional.ofNullable(request.getNewPassword());
 
         String newUsername = user.getUsername();
         String newEmail = user.getEmail();
@@ -105,7 +104,7 @@ public class BasicUserService implements UserService {
             newPassword = rawPassword.get();
         }
 
-        Optional<MultipartFile> nullableFile = Optional.ofNullable(userUpdateFormRequest.getNewProfile());
+        Optional<MultipartFile> nullableFile = Optional.ofNullable(request.getNewProfile());
         UUID nullableProfileId = saveProfileId(nullableFile, Optional.ofNullable(user.getProfileId()));
 
         user.update(newUsername, newEmail, newPassword, nullableProfileId);
@@ -134,7 +133,9 @@ public class BasicUserService implements UserService {
     private UUID saveProfileId(Optional<MultipartFile> file, Optional<UUID> profileId) {
         return file.filter(blankableFile -> blankableFile.getSize() > 0)
                 .map(profileRequest -> {
-                    profileId.ifPresent(binaryContentRepository::deleteById);
+                    if (profileId.isPresent() && binaryContentRepository.existsById(profileId.get())) {
+                        binaryContentRepository.deleteById(profileId.get());
+                    }
 
                     String fileName = profileRequest.getOriginalFilename();
                     String contentType = profileRequest.getContentType();

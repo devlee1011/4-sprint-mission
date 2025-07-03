@@ -4,5 +4,5 @@ import com.sprint.mission.discodeit.dto.request.auth.LoginFormRequest;
 import com.sprint.mission.discodeit.entity.User;
 
 public interface AuthService {
-    User login(LoginFormRequest loginFormRequest);
+    User login(LoginFormRequest request);
 }

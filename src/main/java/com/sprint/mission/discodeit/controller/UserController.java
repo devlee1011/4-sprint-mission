@@ -30,8 +30,8 @@ public class UserController {
     private final AuthService authService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createUser(@ModelAttribute @Valid UserCreateFormRequest userCreateFormRequest) throws IOException {
-        User createdUser = userService.create(userCreateFormRequest);
+    public ResponseEntity<?> createUser(@ModelAttribute @Valid UserCreateFormRequest request) throws IOException {
+        User createdUser = userService.create(request);
         UserDto response = UserDto.toDto(createdUser, isOnlineByUserId(createdUser.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -65,9 +65,9 @@ public class UserController {
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginFormRequest loginFormRequest) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginFormRequest request) {
         // login
-        User loginUser = authService.login(loginFormRequest);
+        User loginUser = authService.login(request);
 
         // userStatus => online
         Instant loginTime = Instant.now();

@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    User create(UserCreateFormRequest userCreateFormRequest);
+    User create(UserCreateFormRequest request);
     UserDto find(UUID userId);
     List<UserDto> findAll();
-    User update(UUID userId, UserUpdateFormRequest userUpdateFormRequest);
+    User update(UUID userId, UserUpdateFormRequest request);
     void delete(UUID userId);
 }

@@ -24,16 +24,16 @@ public class MessageController {
     private final MessageService messageService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createMessage(@ModelAttribute @Valid MessageCreateFormRequest messageCreateFormRequest) {
-        Message createdMessage = messageService.create(messageCreateFormRequest);
+    public ResponseEntity<?> createMessage(@ModelAttribute @Valid MessageCreateFormRequest request) {
+        Message createdMessage = messageService.create(request);
         MessageDto messageDto = MessageDto.toDto(createdMessage);
         return ResponseEntity.status(HttpStatus.CREATED).body(messageDto);
     }
 
     @PutMapping(value= "/{message-id}")
     public ResponseEntity<?> updateMessage(@PathVariable("message-id") UUID messageId,
-                                           @Valid @RequestBody MessageUpdateFormRequest messageUpdateFormRequest) {
-        Message updatedMessage = messageService.update(messageId, messageUpdateFormRequest);
+                                           @Valid @RequestBody MessageUpdateFormRequest request) {
+        Message updatedMessage = messageService.update(messageId, request);
         MessageDto messageDto = MessageDto.toDto(updatedMessage);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(messageDto);
     }

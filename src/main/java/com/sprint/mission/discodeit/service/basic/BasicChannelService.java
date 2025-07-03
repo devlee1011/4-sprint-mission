@@ -29,21 +29,21 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
 
     @Override
-    public Channel create(PublicChannelCreateFormRequest publicChannelCreateFormRequest) {
-        String name = publicChannelCreateFormRequest.getName();
-        String description = publicChannelCreateFormRequest.getDescription();
+    public Channel create(PublicChannelCreateFormRequest request) {
+        String name = request.getName();
+        String description = request.getDescription();
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
         return channelRepository.save(channel);
     }
 
     @Override
-    public Channel create(PrivateChannelCreateFormRequest privateChannelCreateFormRequest) {
+    public Channel create(PrivateChannelCreateFormRequest request) {
         // UserRepository에 존재 하는 user인지 검사
-        isUserExist(privateChannelCreateFormRequest.getParticipantIds());
-        Channel channel = privateChannelCreateFormRequest.toPrivateChannel();
+        isUserExist(request.getParticipantIds());
+        Channel channel = request.toPrivateChannel();
         Channel createdChannel = channelRepository.save(channel);
-        privateChannelCreateFormRequest.getParticipantIds().stream()
+        request.getParticipantIds().stream()
                 .map(userId -> {
                     return new ReadStatus(userId, createdChannel.getId(), Instant.MIN);
                 })

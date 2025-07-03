@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.binarycontent.BinaryContentsGetFormRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -11,7 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -46,9 +49,22 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
-        return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
+    public List<BinaryContent> findAllByIdIn(BinaryContentsGetFormRequest request) {
+        List<BinaryContent> binaryContents = Optional.ofNullable(binaryContentRepository.findAllByIdIn(request.getIds()))
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new NoSuchElementException("BinaryContents with id " + request.getIds() + " not found"));
+
+        List<UUID> foundIds = binaryContents.stream().map(BinaryContent::getId).toList();
+
+        List<UUID> missingIds = request.getIds().stream()
+                .filter(missingId -> !foundIds.contains(missingId))
                 .toList();
+
+        if (!missingIds.isEmpty()) {
+            throw new IllegalArgumentException("해당하는 바이너리 파일을 찾지 못하였습니다. missingIds: " + missingIds);
+        }
+
+        return binaryContents;
     }
 
     @Override

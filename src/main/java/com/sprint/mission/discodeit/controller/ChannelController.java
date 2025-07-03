@@ -32,23 +32,23 @@ public class ChannelController {
     private final MessageService messageService;
 
     @PostMapping(value="/public")
-    public ResponseEntity<?> createPublicChannel(@RequestBody @Valid PublicChannelCreateFormRequest publicChannelCreateFormRequest) {
-        Channel craetedPublicChannel = channelService.create(publicChannelCreateFormRequest);
+    public ResponseEntity<?> createPublicChannel(@RequestBody @Valid PublicChannelCreateFormRequest request) {
+        Channel craetedPublicChannel = channelService.create(request);
         ChannelDto response = ChannelDto.toDto(craetedPublicChannel, getParticipantIds(craetedPublicChannel.getId()), getLastMessageAt(craetedPublicChannel.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping(value = "/private")
-    public ResponseEntity<?> createPrivateChannel(@RequestBody @Valid PrivateChannelCreateFormRequest privateChannelCreateFormRequest) {
-        Channel craetedPrivateChannel = channelService.create(privateChannelCreateFormRequest);
+    public ResponseEntity<?> createPrivateChannel(@RequestBody @Valid PrivateChannelCreateFormRequest request) {
+        Channel craetedPrivateChannel = channelService.create(request);
         ChannelDto response = ChannelDto.toDto(craetedPrivateChannel, getParticipantIds(craetedPrivateChannel.getId()), getLastMessageAt(craetedPrivateChannel.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping(value = "/public/{channel-id}")
-    public ResponseEntity<?> updatePublicChannel(@RequestBody @Valid PublicChannelUpdateFormRequest publicChannelUpdateFormRequest,
+    public ResponseEntity<?> updatePublicChannel(@RequestBody @Valid PublicChannelUpdateFormRequest request,
                                            @PathVariable("channel-id") UUID channelId) {
-        Channel updatedPublicChannel = channelService.update(channelId, publicChannelUpdateFormRequest);
+        Channel updatedPublicChannel = channelService.update(channelId, request);
         ChannelDto response = ChannelDto.toDto(updatedPublicChannel, getParticipantIds(updatedPublicChannel.getId()), getLastMessageAt(updatedPublicChannel.getId()));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }

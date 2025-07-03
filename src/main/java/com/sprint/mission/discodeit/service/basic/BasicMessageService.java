@@ -25,9 +25,9 @@ public class BasicMessageService implements MessageService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public Message create(MessageCreateFormRequest messageCreateFormRequest) {
-        UUID channelId = messageCreateFormRequest.getChannelId();
-        UUID authorId = messageCreateFormRequest.getAuthorId();
+    public Message create(MessageCreateFormRequest request) {
+        UUID channelId = request.getChannelId();
+        UUID authorId = request.getAuthorId();
         
         // 채널, 유저 유효성 검사
         Channel channel = channelRepository.findById(channelId)
@@ -50,7 +50,7 @@ public class BasicMessageService implements MessageService {
         }
       
         // 첨부 파일 처리.. 첨부된 파일이 없으면 empty
-        List<MultipartFile> files = Optional.ofNullable(messageCreateFormRequest.getFiles())
+        List<MultipartFile> files = Optional.ofNullable(request.getFiles())
                 .orElse(Collections.emptyList());
 
         List<UUID> nullableAttachmentIds = files.stream()
@@ -68,7 +68,7 @@ public class BasicMessageService implements MessageService {
                 })
                 .toList();
 
-        Message message = messageCreateFormRequest.toMessage(nullableAttachmentIds);
+        Message message = request.toMessage(nullableAttachmentIds);
         return messageRepository.save(message);
     }
 
@@ -83,8 +83,9 @@ public class BasicMessageService implements MessageService {
         if (!channelRepository.existsById(channelId)) {
             throw new IllegalArgumentException("존재하지 않는 채널 아이디입니다.");
         }
-        return messageRepository.findAllByChannelId(channelId).stream()
-                .toList();
+        return Optional.ofNullable(messageRepository.findAllByChannelId(channelId))
+                .filter(list -> !list.isEmpty())
+                .orElseThrow(() -> new NoSuchElementException("해당 채널에 보내진 메시지가 없습니다: " + channelId));
     }
 
     @Override
