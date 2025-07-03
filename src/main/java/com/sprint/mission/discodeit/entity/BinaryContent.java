@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.baseentity.ImmutableBaseEntity;
 import lombok.Getter;
 
@@ -21,5 +22,16 @@ public class BinaryContent extends ImmutableBaseEntity implements Serializable {
         this.size = size;
         this.contentType = contentType;
         this.bytes = bytes;
+    }
+
+    public BinaryContentDto toDto() {
+        return new BinaryContentDto(
+                super.getId(),
+                fileName,
+                size,
+                contentType,
+                super.getCreatedAt(),
+                bytes
+        );
     }
 }

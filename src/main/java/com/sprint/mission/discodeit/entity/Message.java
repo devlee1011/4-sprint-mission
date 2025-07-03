@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.response.MessageDto;
 import com.sprint.mission.discodeit.entity.baseentity.BaseEntity;
 import lombok.Getter;
 
@@ -37,5 +38,17 @@ public class Message extends BaseEntity implements Serializable {
         if (anyValueUpdated) {
             super.setUpdatedAt(Instant.now());
         }
+    }
+
+    public MessageDto toDto() {
+        return new MessageDto(
+                super.getId(),
+                content,
+                channelId,
+                authorId,
+                super.getCreatedAt(),
+                super.getUpdatedAt(),
+                attachmentIds
+        );
     }
 }

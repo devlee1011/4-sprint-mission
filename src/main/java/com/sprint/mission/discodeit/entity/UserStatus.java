@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.response.UserStatusDto;
 import com.sprint.mission.discodeit.entity.baseentity.BaseEntity;
 import lombok.Getter;
 
@@ -37,5 +38,14 @@ public class UserStatus extends BaseEntity implements Serializable {
     public Boolean isOnline() {
         Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
         return lastActiveAt.isAfter(instantFiveMinutesAgo);
+    }
+
+    public UserStatusDto toDto(Boolean online) {
+        return new UserStatusDto(
+                super.getId(),
+                userId,
+                lastActiveAt,
+                online
+        );
     }
 }

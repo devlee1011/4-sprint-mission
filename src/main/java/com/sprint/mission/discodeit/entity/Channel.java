@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.response.ChannelDto;
 import com.sprint.mission.discodeit.entity.baseentity.BaseEntity;
 import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class Channel extends BaseEntity implements Serializable {
@@ -35,5 +38,16 @@ public class Channel extends BaseEntity implements Serializable {
         if (anyValueUpdated) {
             super.setUpdatedAt(Instant.now());
         }
+    }
+
+    public ChannelDto toDto(List<UUID> participantIds, Instant createdAt) {
+        return new ChannelDto(
+                super.getId(),
+                type,
+                name,
+                description,
+                participantIds,
+                createdAt
+        );
     }
 }

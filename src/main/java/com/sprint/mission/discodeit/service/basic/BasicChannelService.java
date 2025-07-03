@@ -30,10 +30,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(PublicChannelCreateFormRequest request) {
-        String name = request.getName();
-        String description = request.getDescription();
-        Channel channel = new Channel(ChannelType.PUBLIC, name, description);
-
+        Channel channel = request.toPublicChannel();
         return channelRepository.save(channel);
     }
 
@@ -55,7 +52,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto find(UUID channelId) {
         return channelRepository.findById(channelId)
-                .map(channel -> ChannelDto.toDto(channel, getParticipantIds(channelId), getLastMessageAt(channelId)))
+                .map(channel -> channel.toDto(getParticipantIds(channelId), getLastMessageAt(channelId)))
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
@@ -71,7 +68,7 @@ public class BasicChannelService implements ChannelService {
                         channel.getType().equals(ChannelType.PUBLIC)
                                 || mySubscribedChannelIds.contains(channel.getId())
                 )
-                .map(channel -> ChannelDto.toDto(channel, getParticipantIds(channel.getId()), getLastMessageAt(channel.getId())))
+                .map(channel -> channel.toDto(getParticipantIds(channel.getId()), getLastMessageAt(channel.getId())))
                 .toList();
     }
 

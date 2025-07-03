@@ -15,14 +15,4 @@ public record ChannelDto(
         List<UUID> participantIds,
         Instant lastMessageAt
 ) {
-    public static ChannelDto toDto(Channel channel, List<UUID> participantIds, Instant lastMessageAt) {
-        return new ChannelDto(
-                channel.getId(),
-                channel.getType(),
-                channel.getName(),
-                channel.getDescription(),
-                participantIds,
-                lastMessageAt
-        );
-    }
 }

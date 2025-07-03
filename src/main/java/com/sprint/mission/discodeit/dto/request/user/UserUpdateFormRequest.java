@@ -15,7 +15,6 @@ public class UserUpdateFormRequest {
     private String newEmail;
     @NoBlankIfPresent
     private String newPassword;
-
     @RequiredMultipartFileIfPresent
     private MultipartFile newProfile;
 }

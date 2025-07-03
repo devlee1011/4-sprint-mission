@@ -26,7 +26,7 @@ public class MessageController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createMessage(@ModelAttribute @Valid MessageCreateFormRequest request) {
         Message createdMessage = messageService.create(request);
-        MessageDto messageDto = MessageDto.toDto(createdMessage);
+        MessageDto messageDto = createdMessage.toDto();
         return ResponseEntity.status(HttpStatus.CREATED).body(messageDto);
     }
 
@@ -34,7 +34,7 @@ public class MessageController {
     public ResponseEntity<?> updateMessage(@PathVariable("message-id") UUID messageId,
                                            @Valid @RequestBody MessageUpdateFormRequest request) {
         Message updatedMessage = messageService.update(messageId, request);
-        MessageDto messageDto = MessageDto.toDto(updatedMessage);
+        MessageDto messageDto = updatedMessage.toDto();
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(messageDto);
     }
 
@@ -47,7 +47,7 @@ public class MessageController {
     @GetMapping(value = "/{channel-id}")
     public ResponseEntity<?> getMessages(@PathVariable("channel-id") UUID channelId) {
         List<MessageDto> response =  messageService.findAllByChannelId(channelId).stream()
-                .map(MessageDto::toDto).toList();
+                .map(Message::toDto).toList();
         return ResponseEntity.ok(response);
     }
 }

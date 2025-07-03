@@ -58,7 +58,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto find(UUID userId) {
         return userRepository.findById(userId)
-                .map(user -> UserDto.toDto(user, isOnlineByUserId(userId)))
+                .map(user -> user.toDto(isOnlineByUserId(userId)))
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
@@ -66,7 +66,7 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> UserDto.toDto(user, isOnlineByUserId(user.getId())))
+                .map(user -> user.toDto(isOnlineByUserId(user.getId())))
                 .toList();
     }
 
@@ -119,8 +119,8 @@ public class BasicUserService implements UserService {
 
         Optional.ofNullable(user.getProfileId())
                 .ifPresent(binaryContentRepository::deleteById);
-        userStatusRepository.deleteByUserId(userId);
 
+        userStatusRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
 

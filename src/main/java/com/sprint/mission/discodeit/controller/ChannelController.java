@@ -34,14 +34,14 @@ public class ChannelController {
     @PostMapping(value="/public")
     public ResponseEntity<?> createPublicChannel(@RequestBody @Valid PublicChannelCreateFormRequest request) {
         Channel craetedPublicChannel = channelService.create(request);
-        ChannelDto response = ChannelDto.toDto(craetedPublicChannel, getParticipantIds(craetedPublicChannel.getId()), getLastMessageAt(craetedPublicChannel.getId()));
+        ChannelDto response = craetedPublicChannel.toDto(getParticipantIds(craetedPublicChannel.getId()), getLastMessageAt(craetedPublicChannel.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping(value = "/private")
     public ResponseEntity<?> createPrivateChannel(@RequestBody @Valid PrivateChannelCreateFormRequest request) {
         Channel craetedPrivateChannel = channelService.create(request);
-        ChannelDto response = ChannelDto.toDto(craetedPrivateChannel, getParticipantIds(craetedPrivateChannel.getId()), getLastMessageAt(craetedPrivateChannel.getId()));
+        ChannelDto response = craetedPrivateChannel.toDto(getParticipantIds(craetedPrivateChannel.getId()), getLastMessageAt(craetedPrivateChannel.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -49,7 +49,7 @@ public class ChannelController {
     public ResponseEntity<?> updatePublicChannel(@RequestBody @Valid PublicChannelUpdateFormRequest request,
                                            @PathVariable("channel-id") UUID channelId) {
         Channel updatedPublicChannel = channelService.update(channelId, request);
-        ChannelDto response = ChannelDto.toDto(updatedPublicChannel, getParticipantIds(updatedPublicChannel.getId()), getLastMessageAt(updatedPublicChannel.getId()));
+        ChannelDto response = updatedPublicChannel.toDto(getParticipantIds(updatedPublicChannel.getId()), getLastMessageAt(updatedPublicChannel.getId()));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 

@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.dto.response;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -13,14 +11,4 @@ public record BinaryContentDto(
         Instant createdAt,
         byte[] bytes
 ) {
-    public static BinaryContentDto toDto(BinaryContent binaryContent) {
-        return new BinaryContentDto(
-                binaryContent.getId(),
-                binaryContent.getFileName(),
-                binaryContent.getSize(),
-                binaryContent.getContentType(),
-                binaryContent.getCreatedAt(),
-                binaryContent.getBytes()
-        );
-    }
 }

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.baseentity.BaseEntity;
 import lombok.Getter;
 
@@ -48,5 +49,17 @@ public class User extends BaseEntity implements Serializable {
         if (anyValueUpdated) {
             super.setUpdatedAt(Instant.now());
         }
+    }
+
+    public UserDto toDto(Boolean online) {
+        return new UserDto(
+                super.getId(),
+                super.getCreatedAt(),
+                super.getUpdatedAt(),
+                username,
+                email,
+                profileId,
+                online
+        );
     }
 }
