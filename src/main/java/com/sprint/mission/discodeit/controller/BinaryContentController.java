@@ -14,19 +14,19 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/v1/binary-contents")
+@RequestMapping("/api/binaryContent")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
-    @GetMapping(value = "/{binary-content-id}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{binary-content-id}")
     public ResponseEntity<?> getBinaryContent(@PathVariable("binary-content-id") UUID id) {
         BinaryContent binaryContent = binaryContentService.find(id);
         BinaryContentDto response = binaryContent.toDto();
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET, value = "/find")
     public ResponseEntity<?> getAllBinaryContentsByIds(@RequestBody @Valid BinaryContentsGetFormRequest request) {
         List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(request);
         List<BinaryContentDto> response = binaryContents.stream().map(BinaryContent::toDto).toList();

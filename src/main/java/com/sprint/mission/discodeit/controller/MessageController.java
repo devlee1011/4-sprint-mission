@@ -17,20 +17,20 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/v1/messages")
+@RequestMapping("/api/message")
 @RequiredArgsConstructor
 public class MessageController {
 
     private final MessageService messageService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createMessage(@ModelAttribute @Valid MessageCreateFormRequest request) {
         Message createdMessage = messageService.create(request);
         MessageDto messageDto = createdMessage.toDto();
         return ResponseEntity.status(HttpStatus.CREATED).body(messageDto);
     }
 
-    @PutMapping(value= "/{message-id}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{message-id}")
     public ResponseEntity<?> updateMessage(@PathVariable("message-id") UUID messageId,
                                            @Valid @RequestBody MessageUpdateFormRequest request) {
         Message updatedMessage = messageService.update(messageId, request);
@@ -38,12 +38,13 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(messageDto);
     }
 
-    @DeleteMapping(value = "/{message-id}")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{message-id}")
     public ResponseEntity<?> deleteMessage(@PathVariable("message-id") UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "/{channel-id}")
     @GetMapping(value = "/{channel-id}")
     public ResponseEntity<?> getMessages(@PathVariable("channel-id") UUID channelId) {
         List<MessageDto> response =  messageService.findAllByChannelId(channelId).stream()

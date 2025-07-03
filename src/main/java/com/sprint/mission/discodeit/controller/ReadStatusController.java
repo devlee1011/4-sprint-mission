@@ -16,26 +16,26 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/v1/read-statuses")
+@RequestMapping("/api/readStatus")
 @RequiredArgsConstructor
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> createReadStatus(@RequestBody @Valid ReadStatusCreateFormRequest request) {
         ReadStatus createdReadStatus = readStatusService.create(request);
         ReadStatusDto response = createdReadStatus.toDto();
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping(value = "/{channel-id}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{channel-id}")
     public ResponseEntity<?> updateReadStatusByChannelId(@PathVariable("channel-id") UUID channelId) {
         List<ReadStatus> updatedReadStatuses = readStatusService.updateByChannelId(channelId);
         List<ReadStatusDto> response = updatedReadStatuses.stream().map(ReadStatus::toDto).toList();
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
-    @GetMapping(value = "/{user-id}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{user-id}")
     public ResponseEntity<?> getReadStatusesByUserId(@PathVariable("user-id") UUID userId) {
         List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
         List<ReadStatusDto> response = readStatuses.stream().map(ReadStatus::toDto).toList();

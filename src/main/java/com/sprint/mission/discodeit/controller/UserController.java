@@ -23,7 +23,7 @@ import java.time.Instant;
 import java.util.*;
 
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -31,14 +31,14 @@ public class UserController {
     private final UserStatusService userStatusService;
     private final AuthService authService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createUser(@ModelAttribute @Valid UserCreateFormRequest request) throws IOException {
         User createdUser = userService.create(request);
         UserDto response = createdUser.toDto(isOnlineByUserId(createdUser.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping(value = "/{user-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(method = RequestMethod.PATCH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/{user-id}")
     public ResponseEntity<?> updateUser(@PathVariable("user-id") UUID id,
                                         @ModelAttribute @Valid UserUpdateFormRequest userUpdateFormRequest) {
         User updatedUser = userService.update(id, userUpdateFormRequest);
@@ -46,19 +46,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
-    @DeleteMapping(value = "/{user-id}")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{user-id}")
     public ResponseEntity<?> deleteUser(@PathVariable("user-id") UUID id) {
         userService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET, value = "/findAll")
     public ResponseEntity<?> getAllUsers() {
         List<UserDto> users = userService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
-    @PutMapping(value = "/{user-id}")
+    @RequestMapping(method = RequestMethod.PUT, value = "/{user-id}")
     public ResponseEntity<?> updateUserStatus(@PathVariable("user-id") UUID id) {
         Instant now = Instant.now();
         UserStatusUpdateRequest userStatusDto = new UserStatusUpdateRequest(now);
@@ -67,7 +67,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
-    @PostMapping(value = "/login")
+    @RequestMapping(method = RequestMethod.POST, value = "/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginFormRequest request) {
         // login
         User loginUser = authService.login(request);

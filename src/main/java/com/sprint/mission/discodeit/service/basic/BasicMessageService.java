@@ -83,9 +83,8 @@ public class BasicMessageService implements MessageService {
         if (!channelRepository.existsById(channelId)) {
             throw new IllegalArgumentException("존재하지 않는 채널 아이디입니다.");
         }
-        return Optional.ofNullable(messageRepository.findAllByChannelId(channelId))
-                .filter(list -> !list.isEmpty())
-                .orElseThrow(() -> new NoSuchElementException("해당 채널에 보내진 메시지가 없습니다: " + channelId));
+        return messageRepository.findAllByChannelId(channelId).stream()
+                .toList();
     }
 
     @Override
