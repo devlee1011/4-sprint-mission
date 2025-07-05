@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.request.binarycontent.BinaryContentsGetFormRequest;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -10,11 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -22,11 +17,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public BinaryContent create(BinaryContentCreateRequest request) {
-        MultipartFile file = request.getFile();
-        String fileName = file.getOriginalFilename();
+    public BinaryContent create(BinaryContentDto.create request) {
+        MultipartFile file = Optional.ofNullable(request.getFile())
+                .orElseThrow(() -> new NoSuchElementException("추가할 파일이 없습니다."));
+        String fileName = Optional.ofNullable(file.getOriginalFilename())
+                .orElse("defaultFileName");
         String contentType = file.getContentType();
-        byte[] bytes = null;
+        byte[] bytes;
         try {
             bytes = file.getBytes();
         } catch (IOException e) {
@@ -49,7 +46,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public List<BinaryContent> findAllByIdIn(BinaryContentsGetFormRequest request) {
+    public List<BinaryContent> findAllByIdIn(BinaryContentDto.getBinaryContents request) {
         List<BinaryContent> binaryContents = Optional.ofNullable(binaryContentRepository.findAllByIdIn(request.getIds()))
                 .filter(list -> !list.isEmpty())
                 .orElseThrow(() -> new NoSuchElementException("BinaryContents with id " + request.getIds() + " not found"));

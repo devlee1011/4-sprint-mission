@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.response.ChannelDto;
-import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateFormRequest;
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -29,35 +26,33 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
 
     @Override
-    public Channel create(PublicChannelCreateFormRequest request) {
+    public Channel create(ChannelDto.createPublicChannel request) {
         Channel channel = request.toPublicChannel();
         return channelRepository.save(channel);
     }
 
     @Override
-    public Channel create(PrivateChannelCreateFormRequest request) {
+    public Channel create(ChannelDto.createPrivateChannel request) {
         // UserRepository에 존재 하는 user인지 검사
         isUserExist(request.getParticipantIds());
         Channel channel = request.toPrivateChannel();
         Channel createdChannel = channelRepository.save(channel);
         request.getParticipantIds().stream()
-                .map(userId -> {
-                    return new ReadStatus(userId, createdChannel.getId(), Instant.MIN);
-                })
+                .map(userId -> new ReadStatus(userId, createdChannel.getId(), Instant.MIN))
                 .forEach(readStatusRepository::save);
 
         return createdChannel;
     }
 
     @Override
-    public ChannelDto find(UUID channelId) {
+    public ChannelDto.response find(UUID channelId) {
         return channelRepository.findById(channelId)
                 .map(channel -> channel.toDto(getParticipantIds(channelId), getLastMessageAt(channelId)))
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Override
-    public List<ChannelDto> findAllByUserId(UUID userId) {
+    public List<ChannelDto.response> findAllByUserId(UUID userId) {
         isUserExist(userId);
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
                 .map(ReadStatus::getChannelId)
@@ -73,7 +68,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId, PublicChannelUpdateFormRequest request) {
+    public Channel update(UUID channelId, ChannelDto.updatePublicChannel request) {
         Optional<String> rawName = Optional.ofNullable(request.getNewName());
         Optional<String> rawDescription = Optional.ofNullable(request.getNewDescription());
 

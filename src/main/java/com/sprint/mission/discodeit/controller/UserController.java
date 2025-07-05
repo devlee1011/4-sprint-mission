@@ -1,11 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.request.auth.LoginFormRequest;
-import com.sprint.mission.discodeit.dto.request.user.UserCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.dto.request.user.UserUpdateFormRequest;
-import com.sprint.mission.discodeit.dto.response.UserDto;
-import com.sprint.mission.discodeit.dto.response.UserStatusDto;
+import com.sprint.mission.discodeit.dto.LoginDto;
+import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -18,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 
@@ -32,17 +28,17 @@ public class UserController {
     private final AuthService authService;
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createUser(@ModelAttribute @Valid UserCreateFormRequest request) throws IOException {
+    public ResponseEntity<?> createUser(@ModelAttribute @Valid UserDto.create request) {
         User createdUser = userService.create(request);
-        UserDto response = createdUser.toDto(isOnlineByUserId(createdUser.getId()));
+        UserDto.response response = createdUser.toDto(isOnlineByUserId(createdUser.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @RequestMapping(method = RequestMethod.PATCH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/{user-id}")
     public ResponseEntity<?> updateUser(@PathVariable("user-id") UUID id,
-                                        @ModelAttribute @Valid UserUpdateFormRequest userUpdateFormRequest) {
+                                        @ModelAttribute @Valid UserDto.update userUpdateFormRequest) {
         User updatedUser = userService.update(id, userUpdateFormRequest);
-        UserDto response = updatedUser.toDto(isOnlineByUserId(updatedUser.getId()));
+        UserDto.response response = updatedUser.toDto(isOnlineByUserId(updatedUser.getId()));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
@@ -54,30 +50,29 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/findAll")
     public ResponseEntity<?> getAllUsers() {
-        List<UserDto> users = userService.findAll();
+        List<UserDto.response> users = userService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{user-id}")
     public ResponseEntity<?> updateUserStatus(@PathVariable("user-id") UUID id) {
-        Instant now = Instant.now();
-        UserStatusUpdateRequest userStatusDto = new UserStatusUpdateRequest(now);
+        UserStatusDto.update userStatusDto = new UserStatusDto.update(Instant.now());
         UserStatus userStatus = userStatusService.updateByUserId(id, userStatusDto);
-        UserStatusDto response = userStatus.toDto(isOnlineByUserId(id));
+        UserStatusDto.response response = userStatus.toDto(isOnlineByUserId(id));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginFormRequest request) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginDto request) {
         // login
         User loginUser = authService.login(request);
 
         // userStatus => online
         Instant loginTime = Instant.now();
-        UserStatusUpdateRequest userStatusDto = new UserStatusUpdateRequest(loginTime);
+        UserStatusDto.update userStatusDto = new UserStatusDto.update(loginTime);
         userStatusService.updateByUserId(loginUser.getId(), userStatusDto);
 
-        UserDto response = loginUser.toDto(isOnlineByUserId(loginUser.getId()));
+        UserDto.response response = loginUser.toDto(isOnlineByUserId(loginUser.getId()));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 

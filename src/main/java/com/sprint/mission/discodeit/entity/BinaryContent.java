@@ -1,19 +1,21 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.baseentity.ImmutableBaseEntity;
 import lombok.Getter;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 @Getter
 public class BinaryContent extends ImmutableBaseEntity implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     //
-    private String fileName;
-    private Long size;
-    private String contentType;
-    private byte[] bytes;
+    private final String fileName;
+    private final Long size;
+    private final String contentType;
+    private final byte[] bytes;
 
     public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
         super();
@@ -24,8 +26,8 @@ public class BinaryContent extends ImmutableBaseEntity implements Serializable {
         this.bytes = bytes;
     }
 
-    public BinaryContentDto toDto() {
-        return new BinaryContentDto(
+    public BinaryContentDto.response toDto() {
+        return new BinaryContentDto.response(
                 super.getId(),
                 fileName,
                 size,

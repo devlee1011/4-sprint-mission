@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.response.ChannelDto;
-import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateFormRequest;
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -32,24 +29,24 @@ public class ChannelController {
     private final MessageService messageService;
 
     @RequestMapping(method = RequestMethod.POST, value = "/public")
-    public ResponseEntity<?> createPublicChannel(@RequestBody @Valid PublicChannelCreateFormRequest request) {
+    public ResponseEntity<?> createPublicChannel(@RequestBody @Valid ChannelDto.createPublicChannel request) {
         Channel craetedPublicChannel = channelService.create(request);
-        ChannelDto response = craetedPublicChannel.toDto(getParticipantIds(craetedPublicChannel.getId()), getLastMessageAt(craetedPublicChannel.getId()));
+        ChannelDto.response response = craetedPublicChannel.toDto(getParticipantIds(craetedPublicChannel.getId()), getLastMessageAt(craetedPublicChannel.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/private")
-    public ResponseEntity<?> createPrivateChannel(@RequestBody @Valid PrivateChannelCreateFormRequest request) {
+    public ResponseEntity<?> createPrivateChannel(@RequestBody @Valid ChannelDto.createPrivateChannel request) {
         Channel craetedPrivateChannel = channelService.create(request);
-        ChannelDto response = craetedPrivateChannel.toDto(getParticipantIds(craetedPrivateChannel.getId()), getLastMessageAt(craetedPrivateChannel.getId()));
+        ChannelDto.response response = craetedPrivateChannel.toDto(getParticipantIds(craetedPrivateChannel.getId()), getLastMessageAt(craetedPrivateChannel.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/public/{channel-id}")
-    public ResponseEntity<?> updatePublicChannel(@RequestBody @Valid PublicChannelUpdateFormRequest request,
-                                           @PathVariable("channel-id") UUID channelId) {
+    public ResponseEntity<?> updatePublicChannel(@RequestBody @Valid ChannelDto.updatePublicChannel request,
+                                                 @PathVariable("channel-id") UUID channelId) {
         Channel updatedPublicChannel = channelService.update(channelId, request);
-        ChannelDto response = updatedPublicChannel.toDto(getParticipantIds(updatedPublicChannel.getId()), getLastMessageAt(updatedPublicChannel.getId()));
+        ChannelDto.response response = updatedPublicChannel.toDto(getParticipantIds(updatedPublicChannel.getId()), getLastMessageAt(updatedPublicChannel.getId()));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
@@ -61,7 +58,7 @@ public class ChannelController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/{user-id}")
     public ResponseEntity<?> getAllSubscribedChannel(@PathVariable("user-id") UUID userId) {
-        List<ChannelDto> subscribedChannels = channelService.findAllByUserId(userId);
+        List<ChannelDto.response> subscribedChannels = channelService.findAllByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribedChannels);
     }
 

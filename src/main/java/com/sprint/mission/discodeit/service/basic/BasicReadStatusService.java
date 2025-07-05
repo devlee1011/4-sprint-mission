@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.readstatus.ReadStatusCreateFormRequest;
+import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -23,7 +23,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public ReadStatus create(ReadStatusCreateFormRequest request) {
+    public ReadStatus create(ReadStatusDto.create request) {
         UUID userId = request.getUserId();
         UUID channelId = request.getChannelId();
 
@@ -54,9 +54,8 @@ public class BasicReadStatusService implements ReadStatusService {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id " + userId + " does not exist");
         }
-        return Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
-                .filter(list -> !list.isEmpty())
-                .orElseThrow(() -> new NoSuchElementException("유저 아이디에 해당하는 메시지 수신 정보가 없습니다: " + userId));
+        return readStatusRepository.findAllByUserId(userId).stream()
+                .toList();
     }
 
     @Override
@@ -65,9 +64,8 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
         }
 
-        return Optional.ofNullable(readStatusRepository.findAllByChannelId(channelId))
-                .filter(list -> !list.isEmpty())
-                .orElseThrow(() -> new NoSuchElementException("채널 아이디에 해당하는 메시지 수신 정보가 없습니다: " + channelId));
+       return readStatusRepository.findAllByChannelId(channelId).stream()
+               .toList();
     }
 
     @Override

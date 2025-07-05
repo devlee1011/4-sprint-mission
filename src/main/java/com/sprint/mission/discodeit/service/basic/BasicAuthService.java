@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.auth.LoginFormRequest;
+import com.sprint.mission.discodeit.dto.LoginDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -15,7 +15,7 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
     @Override
-    public User login(LoginFormRequest request) {
+    public User login(LoginDto request) {
         String username = request.getUsername();
         String password = request.getPassword();
 

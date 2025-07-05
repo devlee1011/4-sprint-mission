@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.response.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.baseentity.BaseEntity;
 import lombok.Getter;
 
@@ -36,8 +36,8 @@ public class ReadStatus extends BaseEntity implements Serializable {
         }
     }
 
-    public ReadStatusDto toDto() {
-        return new ReadStatusDto(
+    public ReadStatusDto.response toDto() {
+        return new ReadStatusDto.response(
                 super.getId(),
                 userId,
                 channelId,

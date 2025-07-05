@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.user.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -21,7 +20,7 @@ public class BasicUserStatusService implements UserStatusService {
     private final UserRepository userRepository;
 
     @Override
-    public UserStatus create(UserStatusCreateRequest request) {
+    public UserStatus create(UserStatusDto.create request) {
         UUID userId = request.getUserId();
 
         if (!userRepository.existsById(userId)) {
@@ -59,7 +58,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
+    public UserStatus update(UUID userStatusId, UserStatusDto.update request) {
         Instant newLastActiveAt = request.getNewLastActiveAt();
 
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
@@ -70,7 +69,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+    public UserStatus updateByUserId(UUID userId, UserStatusDto.update request) {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id " + userId + " does not exist");
         }

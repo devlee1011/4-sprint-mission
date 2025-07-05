@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.request.auth;
+package com.sprint.mission.discodeit.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class LoginFormRequest {
+public class LoginDto {
     @NotBlank
     private String username;
     @NotBlank

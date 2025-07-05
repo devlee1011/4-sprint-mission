@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.message.MessageCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.message.MessageUpdateFormRequest;
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -25,7 +24,7 @@ public class BasicMessageService implements MessageService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public Message create(MessageCreateFormRequest request) {
+    public Message create(MessageDto.create request) {
         UUID channelId = request.getChannelId();
         UUID authorId = request.getAuthorId();
         
@@ -88,7 +87,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, MessageUpdateFormRequest request) {
+    public Message update(UUID messageId, MessageDto.update request) {
         String newContent = request.getNewContent();
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));

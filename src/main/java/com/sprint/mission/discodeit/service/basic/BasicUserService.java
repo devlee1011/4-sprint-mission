@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.user.UserCreateFormRequest;
-import com.sprint.mission.discodeit.dto.request.user.UserUpdateFormRequest;
-import com.sprint.mission.discodeit.dto.response.UserDto;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -31,7 +29,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(UserCreateFormRequest request) {
+    public User create(UserDto.create request) {
         String username = request.getUsername();
         String email = request.getEmail();
 
@@ -56,14 +54,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto find(UUID userId) {
+    public UserDto.response find(UUID userId) {
         return userRepository.findById(userId)
                 .map(user -> user.toDto(isOnlineByUserId(userId)))
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
     @Override
-    public List<UserDto> findAll() {
+    public List<UserDto.response> findAll() {
         return userRepository.findAll()
                 .stream()
                 .map(user -> user.toDto(isOnlineByUserId(user.getId())))
@@ -71,7 +69,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, UserUpdateFormRequest request) {
+    public User update(UUID userId, UserDto.update request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
@@ -139,7 +137,7 @@ public class BasicUserService implements UserService {
 
                     String fileName = profileRequest.getOriginalFilename();
                     String contentType = profileRequest.getContentType();
-                    byte[] bytes = null;
+                    byte[] bytes;
                     try {
                         bytes = profileRequest.getBytes();
                     } catch (IOException e) {
