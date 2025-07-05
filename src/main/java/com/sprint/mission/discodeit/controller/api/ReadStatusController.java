@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.controller;
+package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -38,5 +38,4 @@ public class ReadStatusController {
         List<ReadStatusDto.response> response = readStatuses.stream().map(ReadStatus::toDto).toList();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
 }

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.controller;
+package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.LoginDto;
 import com.sprint.mission.discodeit.dto.UserDto;
@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/findAll")
-    public ResponseEntity<?> getAllUsers() {
+    public ResponseEntity<List<UserDto.response>> getAllUsers() {
         List<UserDto.response> users = userService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
