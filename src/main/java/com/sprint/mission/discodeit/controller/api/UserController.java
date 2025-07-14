@@ -98,9 +98,9 @@ public class UserController {
     @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> update(@Parameter(description = "수정할 User ID")
                                        @PathVariable("userId") UUID userId,
-                                       @RequestPart @Validated UserRequestDto.UserUpdateRequest userUpdateRequest,
+                                       @RequestPart("userUpdateRequest") @Validated UserRequestDto.UserUpdateRequest userUpdateRequest,
                                        @Parameter(description = "수정할 User 프로필 이미지")
-                                       @RequestPart(required = false) MultipartFile profile) {
+                                       @RequestPart(name = "profile", required = false) MultipartFile profile) {
         User response = userService.update(userId, userUpdateRequest, profile);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
@@ -166,8 +166,8 @@ public class UserController {
     @PatchMapping(value = "/{userId}/userStatus")
     public ResponseEntity<UserStatus> updateUserStatusByUserId(@Parameter(description = "상태를 변경할 User ID")
                                                                @PathVariable(value = "userId") UUID userId,
-                                                               @RequestBody @Validated UserStatusRequestDto.UserStatusUpdateRequest request) {
-        UserStatus response = userStatusService.updateByUserId(userId, request);
+                                                               @RequestBody @Validated UserStatusRequestDto.UserStatusUpdateRequest userStatusUpdateRequest) {
+        UserStatus response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 }

@@ -53,9 +53,9 @@ public class MessageController {
             )
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Message> create(@RequestPart MessageRequestDto.MessageCreateRequest messageCreateRequest,
+    public ResponseEntity<Message> create(@RequestPart("messageCreateRequest") MessageRequestDto.MessageCreateRequest messageCreateRequest,
                                           @Parameter(description = "Message 첨부 파일들")
-                                          @RequestPart(required = false) List<MultipartFile> attachments) {
+                                          @RequestPart(name = "attachments", required = false) List<MultipartFile> attachments) {
         Message response = messageService.create(messageCreateRequest, attachments);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

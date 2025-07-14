@@ -62,7 +62,7 @@ public class BinaryContentController {
     )
     @GetMapping
     public ResponseEntity<List<BinaryContent>> findAllByIdIn(@Parameter(description = "조회할 첨부 파일 ID 목록")
-                                                             @RequestParam List<UUID> binaryContentIds) {
+                                                             @RequestParam("binaryContentsIds") List<UUID> binaryContentIds) {
         List<BinaryContent> response = binaryContentService.findAllByIdIn(binaryContentIds);
         return ResponseEntity.ok(response);
     }
