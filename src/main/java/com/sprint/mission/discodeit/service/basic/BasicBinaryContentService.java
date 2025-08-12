@@ -7,13 +7,15 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -38,30 +40,44 @@ public class BasicBinaryContentService implements BinaryContentService {
         contentType
     );
     binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(binaryContent.getId(), bytes);
-    BinaryContentDto result = binaryContentMapper.toDto(binaryContent);
+    log.info("파일 저장 성공 - 파일 ID: {}", binaryContent.getId());
 
-    log.info("파일 생성 성공 - 파일 ID: {}", binaryContent.getId());
+    binaryContentStorage.put(binaryContent.getId(), bytes);
+    log.info("파일 로컬에 저장 성공 - 파일 ID: {}", binaryContent.getId());
+
+    BinaryContentDto result = binaryContentMapper.toDto(binaryContent);
+    log.info("파일 생성 완료 - 파일 ID: {}", binaryContent.getId());
     return result;
   }
 
   @Transactional(readOnly = true)
   @Override
   public BinaryContentDto find(UUID binaryContentId) {
-    return binaryContentRepository.findById(binaryContentId)
+    log.info("파일 상세 조회 시작 - 파일 ID: {}", binaryContentId);
+    BinaryContentDto result = binaryContentRepository.findById(binaryContentId)
         .map(binaryContentMapper::toDto)
         .orElseThrow(() -> {
           log.warn("파일 상세 조회 실패 - 존재하지 않는 파일 ID: {}", binaryContentId);
           return new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
         });
+    log.info("파일 상세 조회 완료 - 파일 ID: {}", binaryContentId);
+    return result;
   }
 
   @Transactional(readOnly = true)
   @Override
   public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
-    return binaryContentRepository.findAllById(binaryContentIds).stream()
+    log.info("파일 목록 조회 시작 - 파일 ID: {}", binaryContentIds.stream()
+            .map(id -> id + "")
+            .collect(Collectors.joining(", ")));
+
+    List<BinaryContentDto> result = binaryContentRepository.findAllById(binaryContentIds).stream()
         .map(binaryContentMapper::toDto)
         .toList();
+    log.info("파일 목록 조회 완료 - 파일 ID: {}", binaryContentIds.stream()
+            .map(id -> id + "")
+            .collect(Collectors.joining(", ")));
+    return result;
   }
 
   @Transactional
@@ -73,6 +89,6 @@ public class BasicBinaryContentService implements BinaryContentService {
       throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
     }
     binaryContentRepository.deleteById(binaryContentId);
-    log.info("파일 삭제 성공 - 파일 ID: {}", binaryContentId);
+    log.info("파일 삭제 완료 - 파일 ID: {}", binaryContentId);
   }
 }

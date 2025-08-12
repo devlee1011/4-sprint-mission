@@ -4,17 +4,14 @@ import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -28,19 +25,27 @@ public class BinaryContentController implements BinaryContentApi {
   @GetMapping(path = "{binaryContentId}")
   public ResponseEntity<BinaryContentDto> find(
       @PathVariable("binaryContentId") UUID binaryContentId) {
+    log.info("파일 상세 조회 요청 - 파일 ID: {}", binaryContentId);
+
     BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(binaryContent);
+    ResponseEntity<BinaryContentDto> result = ResponseEntity.ok(binaryContent);
+    log.info("파일 상세 조회 응답 - 파일 ID: {}", binaryContentId);
+    return result;
   }
 
   @GetMapping
   public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+    log.info("파일 목록 조회 요청 - 파일 ID: {}", binaryContentIds.stream()
+            .map(id -> id + "")
+            .collect(Collectors.joining(", ")));
+
     List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(binaryContents);
+    ResponseEntity<List<BinaryContentDto>> result = ResponseEntity.ok(binaryContents);
+    log.info("파일 목록 조회 응답 - 파일 ID: {}", binaryContentIds.stream()
+            .map(id -> id + "")
+            .collect(Collectors.joining(", ")));
+    return result;
   }
 
   @GetMapping(path = "{binaryContentId}/download")
@@ -50,7 +55,6 @@ public class BinaryContentController implements BinaryContentApi {
 
     BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
     ResponseEntity<?> result = binaryContentStorage.download(binaryContentDto);
-
     log.info("파일 다운로드 응답 - 파일 ID: {}", binaryContentId);
     return result;
   }
