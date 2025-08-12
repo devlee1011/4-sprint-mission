@@ -87,15 +87,10 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
-        log.info("사용자 목록 조회 시작");
-
-        List<UserDto> result = userRepository.findAllWithProfileAndStatus()
+        return userRepository.findAllWithProfileAndStatus()
                 .stream()
                 .map(userMapper::toDto)
                 .toList();
-
-        log.info("사용자 목록 조회 성공");
-        return result;
     }
 
     @Transactional

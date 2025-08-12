@@ -98,14 +98,8 @@ public class UserController implements UserApi {
     @GetMapping
     @Override
     public ResponseEntity<List<UserDto>> findAll() {
-        log.info("사용자 목록 조회 요청");
-
         List<UserDto> users = userService.findAll();
-
-        ResponseEntity<List<UserDto>> result = ResponseEntity.status(HttpStatus.OK).body(users);
-
-        log.info("사용자 목록 조회 응답");
-        return result;
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
     @PatchMapping(path = "{userId}/userStatus")
