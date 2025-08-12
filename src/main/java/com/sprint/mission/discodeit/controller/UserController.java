@@ -48,13 +48,14 @@ public class UserController implements UserApi {
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         log.info("사용자 생성 요청 - 사용자명: {}", userCreateRequest.username());
+
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
         UserDto createdUser = userService.create(userCreateRequest, profileRequest);
-        log.info("사용자 생성 완료 - 사용자 ID: {}", createdUser.id());
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdUser);
+        ResponseEntity<UserDto> result = ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+
+        log.info("사용자 생성 응답 - 사용자 ID: {}", createdUser.id());
+        return result;
     }
 
     @PatchMapping(
@@ -68,13 +69,19 @@ public class UserController implements UserApi {
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         log.info("사용자 수정 요청 - 사용자 ID: {}", userId);
+
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
         UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
-        log.info("사용자 수정 완료 - 사용자 ID: {}", updatedUser.id());
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(updatedUser);
+        ResponseEntity<UserDto> result = ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+
+        log.info("사용자 수정 응답 - 사용자 ID: {}, 변경된 사용자명: {}, 변경된 이메일: {}, 변경된 프로필 ID: {}",
+                updatedUser.id(),
+                updatedUser.username(),
+                updatedUser.email(),
+                updatedUser.profile().id());
+
+        return result;
     }
 
     @DeleteMapping(path = "{userId}")
@@ -82,23 +89,23 @@ public class UserController implements UserApi {
     public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
         log.info("사용자 삭제 요청 - 사용자 ID: {}", userId);
         userService.delete(userId);
-        log.info("사용자 삭제 완료 - 사용자 ID: {}", userId);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .build();
+        ResponseEntity<Void> result = ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+
+        log.info("사용자 삭제 응답 - 사용자 ID: {}", userId);
+        return result;
     }
 
     @GetMapping
     @Override
     public ResponseEntity<List<UserDto>> findAll() {
-        long startTime = System.currentTimeMillis();
-        log.info("사용자 목록 조회 요청 - 시작 시간: {}", startTime);
+        log.info("사용자 목록 조회 요청");
+
         List<UserDto> users = userService.findAll();
-        long endTime = System.currentTimeMillis();
-        log.info("사용자 목록 조회 완료 - 종료 시간: {}, 소요 시간: {}", endTime, endTime - startTime);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(users);
+
+        ResponseEntity<List<UserDto>> result = ResponseEntity.status(HttpStatus.OK).body(users);
+
+        log.info("사용자 목록 조회 응답");
+        return result;
     }
 
     @PatchMapping(path = "{userId}/userStatus")
@@ -106,11 +113,12 @@ public class UserController implements UserApi {
     public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
                                                                   @RequestBody UserStatusUpdateRequest request) {
         log.info("사용자 상태 변경 요청 - 사용자 ID: {}", userId);
+
         UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
-        log.info("사용자 상태 변경 완료 - 사용자 상태 ID: {}, ", updatedUserStatus.id());
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(updatedUserStatus);
+        ResponseEntity<UserStatusDto> result = ResponseEntity.status(HttpStatus.OK).body(updatedUserStatus);
+
+        log.info("사용자 상태 변경 응답 - 사용자 상태 ID: {}, 변경된 마지막 로그인 시간: {}", updatedUserStatus.id(), updatedUserStatus.lastActiveAt());
+        return result;
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
