@@ -38,9 +38,14 @@ public class ChannelController implements ChannelApi {
         log.info("공개 채널 생성 요청 - 채널명: {}", request.name());
 
         ChannelDto createdChannel = channelService.create(request);
+        log.info("공개 채널 생성 완료 - 채널 ID: {}", createdChannel.id());
         ResponseEntity<ChannelDto> result = ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
 
-        log.info("공개 채널 생성 응답 - 채널 ID: {}", createdChannel.id());
+        log.info("공개 채널 생성 응답 - 채널 ID: {}, 채널명: {}, 채널 설명: {}, 채널 타입: {}",
+                createdChannel.id(),
+                createdChannel.name(),
+                createdChannel.description(),
+                createdChannel.type());
         return result;
     }
 
@@ -52,41 +57,59 @@ public class ChannelController implements ChannelApi {
                         .collect(Collectors.joining(", ")));
 
         ChannelDto createdChannel = channelService.create(request);
-        ResponseEntity<ChannelDto> result = ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
+        log.info("비공개 채널 생성 완료 - 채널 ID: {}", createdChannel.id());
 
-        log.info("비공개 채널 생성 응답 - 채널 ID: {}", createdChannel.id());
+        ResponseEntity<ChannelDto> result = ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
+        log.info("비공개 채널 생성 응답 - 채널 ID: {}, 채널 타입: {}",
+                createdChannel.id(),
+                createdChannel.type());
         return result;
     }
 
     @PatchMapping(path = "{channelId}")
     public ResponseEntity<ChannelDto> update(@PathVariable("channelId") UUID channelId,
                                              @RequestBody PublicChannelUpdateRequest request) {
-        log.info("공개 채널 수정 요청 - 채널 ID: {}", channelId);
+        log.info("공개 채널 수정 요청 - 채널 ID: {}, 요청 채널명: {}, 요청 채널 설명: {}",
+                channelId,
+                request.newName(),
+                request.newDescription());
 
         ChannelDto updatedChannel = channelService.update(channelId, request);
-        ResponseEntity<ChannelDto> result = ResponseEntity.status(HttpStatus.OK).body(updatedChannel);
+        log.info("공개 채널 수정 완료 - 채널 ID: {}", updatedChannel.id());
 
+        ResponseEntity<ChannelDto> result = ResponseEntity.status(HttpStatus.OK).body(updatedChannel);
         log.info("공개 채널 수정 응답 - 채널 ID: {}, 변경된 채널명: {}, 변경된 채널 설명: {}",
                 updatedChannel.id(),
                 updatedChannel.name(),
                 updatedChannel.description());
-
         return result;
     }
 
     @DeleteMapping(path = "{channelId}")
     public ResponseEntity<Void> delete(@PathVariable("channelId") UUID channelId) {
         log.info("채널 삭제 요청 - 채널 ID: {}", channelId);
-        channelService.delete(channelId);
-        ResponseEntity<Void> result = ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
+        channelService.delete(channelId);
+        log.info("채널 삭제 완료 - 채널 ID: {}", channelId);
+
+        ResponseEntity<Void> result = ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         log.info("채널 삭제 응답 - 채널 ID: {}", channelId);
         return result;
     }
 
     @GetMapping
     public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
+        log.info("해당 사용자가 참여중인 채널 목록 조회 요청 - 사용자 ID: {}", userId);
+
         List<ChannelDto> channels = channelService.findAllByUserId(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(channels);
+        log.info("해당 사용자가 참여중인 채널 목록 조회 완료 - 사용자 ID: {}", userId);
+
+        ResponseEntity<List<ChannelDto>> result = ResponseEntity.status(HttpStatus.OK).body(channels);
+        log.info("해당 사용자가 참여중인 채널 목록 조회 응답 - 사용자 ID: {}, 채널 ID: {}",
+                userId,
+                channels.stream()
+                        .map(channelDto -> channelDto.id() + "")
+                        .collect(Collectors.joining(", ")));
+        return result;
     }
 }
