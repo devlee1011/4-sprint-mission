@@ -7,14 +7,6 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -23,17 +15,16 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -69,12 +60,16 @@ public class MessageController implements MessageApi {
                         .toList())
                 .orElse(new ArrayList<>());
         MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
-        ResponseEntity<MessageDto> result = ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
+        log.info("메시지 생성 성공 - 메시지 ID: {}", createdMessage.id());
 
-        log.info("메시지 생성 응답 - 메시지 ID: {}, 채널 ID: {}, 작성자 ID: {}",
+        ResponseEntity<MessageDto> result = ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
+        log.info("메시지 생성 응답 - 메시지 ID: {}, 채널 ID: {}, 작성자 ID: {}, 첨부 파일 ID: {}",
                 createdMessage.id(),
                 createdMessage.channelId(),
-                createdMessage.author().id());
+                createdMessage.author().id(),
+                createdMessage.attachments().stream()
+                        .map(attachment -> attachment.id() + "")
+                        .collect(Collectors.joining(", ")));
 
         return result;
     }
@@ -87,8 +82,9 @@ public class MessageController implements MessageApi {
                 request.newContent());
 
         MessageDto updatedMessage = messageService.update(messageId, request);
-        ResponseEntity<MessageDto> result = ResponseEntity.ok(updatedMessage);
+        log.info("메시지 수정 성공 - 메시지 ID: {}", updatedMessage.id());
 
+        ResponseEntity<MessageDto> result = ResponseEntity.ok(updatedMessage);
         log.info("메시지 수정 응답 - 메시지 ID: {}, 변경된 메시지 콘텐츠: {}", messageId, updatedMessage.content());
         return result;
     }
@@ -96,9 +92,11 @@ public class MessageController implements MessageApi {
     @DeleteMapping(path = "{messageId}")
     public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
         log.info("메시지 삭제 요청 - 메시지 ID: {}", messageId);
-        messageService.delete(messageId);
-        ResponseEntity<Void> result = ResponseEntity.noContent().build();
 
+        messageService.delete(messageId);
+        log.info("메시지 삭제 성공 - 메시지 ID: {}", messageId);
+
+        ResponseEntity<Void> result = ResponseEntity.noContent().build();
         log.info("메시지 삭제 응답 - 메시지 ID: {}", messageId);
         return result;
     }
@@ -113,9 +111,10 @@ public class MessageController implements MessageApi {
                     sort = "createdAt",
                     direction = Direction.DESC
             ) Pageable pageable) {
+        log.info("해당 채널에 작성된 메시지 목록 조회 요청 - 채널 ID: {}", channelId);
         PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(messages);
+        ResponseEntity<PageResponse<MessageDto>> result = ResponseEntity.ok(messages);
+        log.info("해당 채널에 작성된 메시지 목록 조회 응답 - 채널 ID: {}", channelId);
+        return result;
     }
 }
