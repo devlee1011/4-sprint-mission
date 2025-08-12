@@ -49,13 +49,13 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest,
                              List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+      log.info("메시지 생성 시작 - 메시지 콘텐츠: {}, 채널 ID: {}, 작성자 ID: {}",
+              messageCreateRequest.content(),
+              messageCreateRequest.channelId(),
+              messageCreateRequest.authorId());
+
         UUID channelId = messageCreateRequest.channelId();
         UUID authorId = messageCreateRequest.authorId();
-
-        log.info("메시지 생성 시작 - 메시지 콘텐츠: {}, 채널 ID: {}, 작성자 ID: {}",
-                messageCreateRequest.content(),
-                channelId,
-                authorId);
 
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> {
