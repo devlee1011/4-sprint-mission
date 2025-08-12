@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.utility.BinaryContentSaveUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -68,19 +69,11 @@ public class BasicMessageService implements MessageService {
                     return new NoSuchElementException("Author with id " + authorId + " does not exist");
                 });
 
+        // 첨부 파일 저장 (toNullableProfile에 로그 메시지 있음)
         List<BinaryContent> attachments = binaryContentCreateRequests.stream()
-                .map(attachmentRequest -> {
-                    String fileName = attachmentRequest.fileName();
-                    String contentType = attachmentRequest.contentType();
-                    byte[] bytes = attachmentRequest.bytes();
-
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-                            contentType);
-                    binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(binaryContent.getId(), bytes);
-                    log.info("첨부 파일 저장 성공 - 첨부 파일 ID: {}", binaryContent.getId());
-                    return binaryContent;
-                })
+                .map(request -> BinaryContentSaveUtility.toNullableProfile(Optional.ofNullable(request),
+                        binaryContentRepository,
+                        binaryContentStorage))
                 .toList();
 
         String content = messageCreateRequest.content();
@@ -95,7 +88,7 @@ public class BasicMessageService implements MessageService {
         log.info("메시지 저장 성공 - 메시지 ID: {}", message.getId());
 
         MessageDto result = messageMapper.toDto(message);
-        log.info("메시지 생성 성공 - 메시지 ID: {}, 채널 ID: {}, 작성자 ID: {}, 메시지 콘텐츠: {}, 첨부 파일 ID: {}",
+        log.info("메시지 생성 완료 - 메시지 ID: {}, 채널 ID: {}, 작성자 ID: {}, 메시지 콘텐츠: {}, 첨부 파일 ID: {}",
                 message.getId(),
                 message.getChannel().getId(),
                 message.getAuthor().getId(),
@@ -152,10 +145,8 @@ public class BasicMessageService implements MessageService {
                     return new NoSuchElementException("Message with id " + messageId + " not found");
                 });
         message.update(newContent);
-        log.info("메시지 수정 완료 - 메시지 ID: {}", messageId);
-
         MessageDto result = messageMapper.toDto(message);
-        log.info("메시지 수정 성공 - 메시지 ID: {}, 변경된 메시지 콘텐츠: {}", messageId, result.content());
+        log.info("메시지 수정 완료 - 메시지 ID: {}, 변경된 메시지 콘텐츠: {}", messageId, result.content());
         return result;
     }
 

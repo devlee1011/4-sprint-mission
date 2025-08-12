@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.utility.BinaryContentSaveUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,9 @@ public class BasicUserService implements UserService {
         }
 
         // 프로필 파일 저장 (toNullableProfile에 로그 메시지 있음)
-        BinaryContent nullableProfile = toNullableProfile(optionalProfileCreateRequest);
+        BinaryContent nullableProfile = BinaryContentSaveUtility.toNullableProfile(optionalProfileCreateRequest,
+                binaryContentRepository,
+                binaryContentStorage);
 
         User user = new User(username, email, password, nullableProfile);
         log.info("사용자 생성 성공 - 사용자 ID: {}", user.getId());
@@ -132,11 +135,11 @@ public class BasicUserService implements UserService {
         }
 
         // 프로필 파일 저장 (toNullableProfile에 로그 메시지 있음)
-        BinaryContent nullableProfile = toNullableProfile(optionalProfileCreateRequest);
+        BinaryContent nullableProfile = BinaryContentSaveUtility.toNullableProfile(optionalProfileCreateRequest,
+                binaryContentRepository,
+                binaryContentStorage);
 
         user.update(newUsername, newEmail, newPassword, nullableProfile);
-        log.info("사용자 수정 성공 - 사용자 ID: {}", user.getId());
-
         UserDto result = userMapper.toDto(user);
         log.info("사용자 수정 완료 - 사용자 ID: {}, 변경된 사용자명: {}, 변경된 이메일: {}", userId, result.username(), result.email());
         return result;
@@ -153,22 +156,5 @@ public class BasicUserService implements UserService {
         }
         userRepository.deleteById(userId);
         log.info("사용자 삭제 완료 - 사용자 ID: {}", userId);
-    }
-
-    private BinaryContent toNullableProfile(Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-        return optionalProfileCreateRequest
-                .map(profileRequest -> {
-
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-                            contentType);
-                    binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(binaryContent.getId(), bytes);
-                    log.info("프로필 파일 저장 성공 - 프로필 파일 ID: {}", binaryContent.getId());
-                    return binaryContent;
-                })
-                .orElse(null);
     }
 }

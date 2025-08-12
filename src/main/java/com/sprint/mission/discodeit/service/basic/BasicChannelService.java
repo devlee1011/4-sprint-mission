@@ -45,8 +45,8 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.save(channel);
         log.info("공개 채널 저장 - 채널 ID: {}", channel.getId());
-        ChannelDto result = channelMapper.toDto(channel);
 
+        ChannelDto result = channelMapper.toDto(channel);
         log.info("공개 채널 생성 완료 - 채널 ID: {}, 채널명: {}, 채널 설명: {}, 채널 타입: {}",
                 channel.getId(),
                 channel.getName(),
@@ -63,6 +63,7 @@ public class BasicChannelService implements ChannelService {
                 .collect(Collectors.joining(", ")));
 
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+
         channelRepository.save(channel);
         log.info("비공개 채널 저장 - 채널 ID: {}", channel.getId());
 
@@ -143,8 +144,6 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.update(newName, newDescription);
-        log.info("공개 채널 수정 성공 - 채널 ID: {}", channelId);
-        
         ChannelDto result = channelMapper.toDto(channel);
         log.info("공개 채널 수정 완료 - 채널 ID: {}, 변경된 채널명: {}, 변경된 채널 설명: {}",
                 channel.getId(),
