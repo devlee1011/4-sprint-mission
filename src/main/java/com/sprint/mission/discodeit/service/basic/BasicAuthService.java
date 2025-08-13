@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.auth.LoginFailedException;
+import com.sprint.mission.discodeit.exception.auth.UsernameNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -10,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
@@ -32,12 +32,12 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
                     log.warn("로그인 실패 - 존재하지 않는 사용자명: {}", username);
-                    return new NoSuchElementException("User with username " + username + " not found");
+                    return new UsernameNotFoundException(username);
                 });
 
         if (!user.getPassword().equals(password)) {
             log.warn("로그인 실패 - 잘못된 사용자명 혹은 패스워드");
-            throw new IllegalArgumentException("Wrong password");
+            throw new LoginFailedException(username);
         }
 
         UserDto result = userMapper.toDto(user);

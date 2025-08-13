@@ -5,6 +5,9 @@ import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusDuplicateException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -16,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,14 +42,14 @@ public class BasicUserStatusService implements UserStatusService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("사용자 상태 생성 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                    return new NoSuchElementException("User with id " + userId + " not found");
+                    return new UserNotFoundException(userId);
                 });
         Optional.ofNullable(user.getStatus())
                 .ifPresent(status -> {
                     log.warn("사용자 상태 생성 실패 - 사용자 상태 중복 생성 불가, 사용자 상태 ID: {}, 사용자 ID: {}",
                             status.getId(),
                             user.getId());
-                    throw new IllegalArgumentException("UserStatus with id " + userId + " already exists");
+                    throw new UserStatusDuplicateException(userId, status.getId());
                 });
 
         Instant lastActiveAt = request.lastActiveAt();
@@ -70,8 +72,8 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatusDto result = userStatusRepository.findById(userStatusId)
                 .map(userStatusMapper::toDto)
                 .orElseThrow(() -> {
-                    log.warn("사용자 상태 상세 조회 실패 - 존재하지 않는 사용자 ID: {}", userStatusId);
-                    return new NoSuchElementException("UserStatus with id " + userStatusId + " not found");
+                    log.warn("사용자 상태 상세 조회 실패 - 존재하지 않는 사용자 상태 ID: {}", userStatusId);
+                    return new UserStatusNotFoundException(userStatusId);
                 });
 
         log.info("사용자 상태 상세 조회 완료 - 사용자 상태 ID: {}", userStatusId);
@@ -102,7 +104,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> {
                     log.warn("사용자 상태 수정 실패 - 존재하지 않는 사용자 상태 ID: {}", userStatusId);
-                    return new NoSuchElementException("UserStatus with id " + userStatusId + " not found");
+                    return new UserStatusNotFoundException(userStatusId);
                 });
         userStatus.update(newLastActiveAt);
 
@@ -125,7 +127,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> {
                     log.warn("해당 사용자의 사용자 상태 수정 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                    return new NoSuchElementException("UserStatus with userId " + userId + " not found");
+                    return new UserNotFoundException(userId);
                 });
         userStatus.update(newLastActiveAt);
 
@@ -144,7 +146,7 @@ public class BasicUserStatusService implements UserStatusService {
 
         if (!userStatusRepository.existsById(userStatusId)) {
             log.warn("사용자 상태 삭제 실패 - 존재하지 않는 사용자 상태 ID: {}", userStatusId);
-            throw new NoSuchElementException("UserStatus with id " + userStatusId + " not found");
+            throw new UserStatusNotFoundException(userStatusId);
         }
 
         userStatusRepository.deleteById(userStatusId);

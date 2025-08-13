@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.EmailDuplicateException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UsernameDuplicateException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,11 +48,11 @@ public class BasicUserService implements UserService {
 
         if (userRepository.existsByEmail(email)) {
             log.warn("사용자 생성 실패 - 중복된 이메일: {}", email);
-            throw new IllegalArgumentException("User with email " + email + " already exists");
+            throw new EmailDuplicateException(email);
         }
         if (userRepository.existsByUsername(username)) {
             log.warn("사용자 생성 실패 - 중복된 사용자명: {}", username);
-            throw new IllegalArgumentException("User with username " + username + " already exists");
+            throw new UsernameDuplicateException(username);
         }
 
         // 프로필 파일 저장 (toNullableProfile에 로그 메시지 있음)
@@ -87,7 +89,7 @@ public class BasicUserService implements UserService {
                 .map(userMapper::toDto)
                 .orElseThrow(() -> {
                     log.warn("사용자 상세 조회 실패, 존재하지 않는 사용자 ID - 사용자 ID: {}", userId);
-                    return new NoSuchElementException("User with id " + userId + " not found");
+                    return new UserNotFoundException(userId);
                 });
         log.info("사용자 상세 정보 조회 완료 - 사용자 ID: {}", result.id());
         return result;
@@ -117,7 +119,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("사용자 수정 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                    return new NoSuchElementException("User with id " + userId + " not found");
+                    return new UserNotFoundException(userId);
                 });
 
         String newUsername = userUpdateRequest.newUsername();
@@ -126,11 +128,11 @@ public class BasicUserService implements UserService {
 
         if (userRepository.existsByEmail(newEmail)) {
             log.warn("사용자 수정 실패 - 중복된 이메일: {}", newEmail);
-            throw new IllegalArgumentException("User with email " + newEmail + " already exists");
+            throw new EmailDuplicateException(newEmail);
         }
         if (userRepository.existsByUsername(newUsername)) {
             log.warn("사용자 수정 실패 - 중복된 사용자명: {}", newUsername);
-            throw new IllegalArgumentException("User with username " + newUsername + " already exists");
+            throw new UsernameDuplicateException(newUsername);
         }
 
         // 프로필 파일 저장 (toNullableProfile에 로그 메시지 있음)
@@ -151,7 +153,7 @@ public class BasicUserService implements UserService {
 
         if (userRepository.existsById(userId)) {
             log.warn("사용자 삭제 실패 - 존재하지 않는 사용자 ID: {}", userId);
-            throw new NoSuchElementException("User with id " + userId + " not found");
+            throw new UserNotFoundException(userId);
         }
 
         userRepository.deleteById(userId);

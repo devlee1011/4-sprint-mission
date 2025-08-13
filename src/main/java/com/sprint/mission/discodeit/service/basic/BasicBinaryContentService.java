@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -60,7 +60,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 .map(binaryContentMapper::toDto)
                 .orElseThrow(() -> {
                     log.warn("파일 상세 조회 실패 - 존재하지 않는 파일 ID: {}", binaryContentId);
-                    return new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
+                    return new BinaryContentNotFoundException(binaryContentId);
                 });
 
         log.info("파일 상세 조회 완료 - 파일 ID: {}", binaryContentId);
@@ -87,7 +87,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         if (!binaryContentRepository.existsById(binaryContentId)) {
             log.warn("파일 삭제 실패 - 존재하지 않는 파일 ID: {}", binaryContentId);
-            throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
+            throw new BinaryContentNotFoundException(binaryContentId);
         }
 
         binaryContentRepository.deleteById(binaryContentId);
