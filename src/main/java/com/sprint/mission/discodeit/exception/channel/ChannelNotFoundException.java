@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class ChannelNotFoundException extends ChannelException {
-    public ChannelNotFoundException(String fieldName, UUID channelId) {
-        super(Instant.now(), ErrorCode.CHANNEL_NOT_FOUND, fieldName, channelId);
+    public ChannelNotFoundException(UUID channelId) {
+        super(Instant.now(), ErrorCode.CHANNEL_NOT_FOUND, "id", channelId);
     }
 }

@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class UserNotFoundException extends UserException {
-    public UserNotFoundException(String fieldName, UUID userId) {
-        super(Instant.now(), ErrorCode.USER_NOT_FOUND, fieldName, userId);
+    public UserNotFoundException(UUID userId) {
+        super(Instant.now(), ErrorCode.USER_NOT_FOUND, "id", userId);
     }
 }
