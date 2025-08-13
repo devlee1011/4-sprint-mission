@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class MessageExceptionHandler {
     @ExceptionHandler(MessageNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleException(MessageNotFoundException e) {
-        log.error("존재하지 않는 메시지 - 에러 메시지: {}", e.getMessage());
+        log.error("존재하지 않는 메시지 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),

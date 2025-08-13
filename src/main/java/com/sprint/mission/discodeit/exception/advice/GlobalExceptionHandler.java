@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleException(IllegalArgumentException e) {
-        log.warn("잘못된 입력값 - 에러 메시지: {}", e.getMessage());
+        log.warn("잘못된 입력값 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 Instant.now(),
                 "IllegalArgumentException",
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorResponse> handleException(NoSuchElementException e) {
-        log.warn("요청한 리소스를 찾을 수 없음 - 에러 메시지: {}", e.getMessage());
+        log.warn("요청한 리소스를 찾을 수 없음 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 Instant.now(),
                 null,
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
-        log.warn("검증 실패 - 에러 메시지: {}", e.getMessage());
+        log.warn("검증 실패 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 Instant.now(),
                 null,
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     // 전역 예외 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("예기치 못한 오류 발생 - 에러 메시지: {}", e.getMessage());
+        log.error("예기치 못한 오류 발생 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 Instant.now(),
                 null,

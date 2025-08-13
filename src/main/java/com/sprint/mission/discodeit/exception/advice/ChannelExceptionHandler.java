@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ChannelExceptionHandler {
     @ExceptionHandler(ChannelNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleException(ChannelNotFoundException e) {
-        log.error("존재하지 않는 채널 - 에러 메시지: {}", e.getMessage());
+        log.error("존재하지 않는 채널 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),
@@ -31,7 +31,7 @@ public class ChannelExceptionHandler {
 
     @ExceptionHandler(PrivateChannelUpdateException.class)
     public ResponseEntity<ErrorResponse> handleException(PrivateChannelUpdateException e) {
-        log.error("비공개 채널 수정 불가 - 에러 메시지: {}", e.getMessage());
+        log.error("비공개 채널 수정 불가 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),

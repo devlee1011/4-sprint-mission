@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class AuthExceptionHandler {
     @ExceptionHandler(LoginFailedException.class)
     public ResponseEntity<ErrorResponse> handleException(LoginFailedException e) {
-        log.error("로그인 실패 - 에러 메시지: {}", e.getMessage());
+        log.error("로그인 실패 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),
@@ -31,7 +31,7 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleException(UsernameNotFoundException e) {
-        log.error("존재하지 않는 사용자명 - 에러 메시지: {}", e.getMessage());
+        log.error("존재하지 않는 사용자명 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),

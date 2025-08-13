@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ReadStatusExceptionHandler {
     @ExceptionHandler(ReadStatusNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleException(ReadStatusNotFoundException e) {
-        log.error("존재하지 않는 읽기 정보 - 에러 메시지: {}", e.getMessage());
+        log.error("존재하지 않는 읽기 정보 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),
@@ -31,7 +31,7 @@ public class ReadStatusExceptionHandler {
 
     @ExceptionHandler(ReadStatusDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleException(ReadStatusDuplicateException e) {
-        log.error("읽기 정보 중복 생성 불가 - 에러 메시지: {}", e.getMessage());
+        log.error("읽기 정보 중복 생성 불가 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),

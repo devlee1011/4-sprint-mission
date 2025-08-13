@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class UserExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleException(UserNotFoundException e) {
-        log.error("존재하지 않는 사용자 - 에러 메시지: {}", e.getMessage());
+        log.error("존재하지 않는 사용자 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),
@@ -32,7 +32,7 @@ public class UserExceptionHandler {
 
     @ExceptionHandler(UsernameDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleException(UsernameDuplicateException e) {
-        log.error("중복된 사용자명 - 에러 메시지: {}", e.getMessage());
+        log.error("중복된 사용자명 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),
@@ -48,7 +48,7 @@ public class UserExceptionHandler {
 
     @ExceptionHandler(EmailDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleException(EmailDuplicateException e) {
-        log.error("중복된 이메일 - 에러 메시지: {}", e.getMessage());
+        log.error("중복된 이메일 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),

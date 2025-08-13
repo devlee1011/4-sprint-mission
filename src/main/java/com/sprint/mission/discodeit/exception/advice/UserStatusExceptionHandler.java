@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class UserStatusExceptionHandler {
     @ExceptionHandler(UserStatusNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleException(UserStatusNotFoundException e) {
-        log.error("존재하지 않는 사용자 상태 - 에러 메시지: {}", e.getMessage());
+        log.error("존재하지 않는 사용자 상태 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),
@@ -31,7 +31,7 @@ public class UserStatusExceptionHandler {
 
     @ExceptionHandler(UserStatusDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleException(UserStatusDuplicateException e) {
-        log.error("사용자 상태 중복 생성 불가 - 에러 메시지: {}", e.getMessage());
+        log.error("사용자 상태 중복 생성 불가 - 에러 메시지: {}", e.getMessage(), e);
         ErrorResponse result = new ErrorResponse(
                 e.getTimestamp(),
                 e.getErrorCode().toString(),
