@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.advice;
 
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;

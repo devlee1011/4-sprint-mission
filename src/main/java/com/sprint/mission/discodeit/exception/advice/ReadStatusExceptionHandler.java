@@ -1,7 +1,9 @@
-package com.sprint.mission.discodeit.exception.readstatus;
+package com.sprint.mission.discodeit.exception.advice;
 
 import com.sprint.mission.discodeit.controller.ReadStatusController;
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusDuplicateException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

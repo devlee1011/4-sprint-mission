@@ -1,7 +1,10 @@
-package com.sprint.mission.discodeit.exception.user;
+package com.sprint.mission.discodeit.exception.advice;
 
 import com.sprint.mission.discodeit.controller.UserController;
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
+import com.sprint.mission.discodeit.exception.user.EmailDuplicateException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UsernameDuplicateException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
