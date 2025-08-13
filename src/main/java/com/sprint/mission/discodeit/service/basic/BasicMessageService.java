@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.utility.BinaryContentSaveUtility;
+import com.sprint.mission.discodeit.utility.CollectionToStringUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -57,6 +57,7 @@ public class BasicMessageService implements MessageService {
 
         UUID channelId = messageCreateRequest.channelId();
         UUID authorId = messageCreateRequest.authorId();
+        String content = messageCreateRequest.content();
 
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> {
@@ -76,7 +77,7 @@ public class BasicMessageService implements MessageService {
                         binaryContentStorage))
                 .toList();
 
-        String content = messageCreateRequest.content();
+
         Message message = new Message(
                 content,
                 channel,
@@ -88,14 +89,14 @@ public class BasicMessageService implements MessageService {
         log.info("메시지 저장 성공 - 메시지 ID: {}", message.getId());
 
         MessageDto result = messageMapper.toDto(message);
+        String attachmentsStr = CollectionToStringUtility.joinToStringByComma(message.getAttachments().stream()
+                .map(BinaryContent::getId).toList());
         log.info("메시지 생성 완료 - 메시지 ID: {}, 채널 ID: {}, 작성자 ID: {}, 메시지 콘텐츠: {}, 첨부 파일 ID: {}",
                 message.getId(),
                 message.getChannel().getId(),
                 message.getAuthor().getId(),
                 message.getContent(),
-                message.getAttachments().stream()
-                        .map(attachment -> attachment.getId() + "")
-                        .collect(Collectors.joining(", ")));
+                attachmentsStr);
         return result;
     }
 
@@ -138,13 +139,16 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
         log.info("메시지 수정 시작 - 메시지 ID: {}, 요청 메시지 콘텐츠: {}", messageId, request.newContent());
+
         String newContent = request.newContent();
+
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> {
                     log.warn("메시지 수정 실패 - 존재하지 않는 메시지 ID: {}", messageId);
                     return new NoSuchElementException("Message with id " + messageId + " not found");
                 });
         message.update(newContent);
+
         MessageDto result = messageMapper.toDto(message);
         log.info("메시지 수정 완료 - 메시지 ID: {}, 변경된 메시지 콘텐츠: {}", messageId, result.content());
         return result;
@@ -154,10 +158,12 @@ public class BasicMessageService implements MessageService {
     @Override
     public void delete(UUID messageId) {
         log.info("메시지 삭제 시작 - 메시지 ID: {}", messageId);
+
         if (!messageRepository.existsById(messageId)) {
             log.warn("메시지 삭제 실패 - 존재하지 않는 메시지 ID: {}", messageId);
             throw new NoSuchElementException("Message with id " + messageId + " not found");
         }
+
         messageRepository.deleteById(messageId);
         log.info("메시지 삭제 완료 - 메시지 ID: {}", messageId);
     }

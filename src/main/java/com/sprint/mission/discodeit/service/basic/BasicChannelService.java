@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.utility.CollectionToStringUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto create(PublicChannelCreateRequest request) {
         log.info("공개 채널 생성 시작 - 채널명: {}", request.name());
+
         String name = request.name();
         String description = request.description();
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
@@ -58,9 +60,8 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     @Override
     public ChannelDto create(PrivateChannelCreateRequest request) {
-        log.info("비공개 채널 생성 시작 - 참여자 ID: {}", request.participantIds().stream()
-                .map(id -> id + "")
-                .collect(Collectors.joining(", ")));
+        String participantsIds = CollectionToStringUtility.joinToStringByComma(request.participantIds());
+        log.info("비공개 채널 생성 시작 - 참여자 ID: {}", participantsIds);
 
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
 
@@ -79,9 +80,7 @@ public class BasicChannelService implements ChannelService {
         log.info("비공개 채널 생성 완료 - 채널 ID: {}, 채널 타입: {}, 참여자 ID: {}",
                 channel.getId(),
                 channel.getType(),
-                readStatuses.stream()
-                        .map(readStatus -> readStatus.getUser().getId() + "")
-                        .collect(Collectors.joining(", ")));
+                participantsIds);
         return result;
     }
 
@@ -114,11 +113,11 @@ public class BasicChannelService implements ChannelService {
                 .stream()
                 .map(channelMapper::toDto)
                 .toList();
+
+        String channelIdsStr = CollectionToStringUtility.joinToStringByComma(result.stream().map(ChannelDto::id).toList());
         log.info("해당 사용자가 참여중인 채널 목록 조회 완료 - 사용자 ID: {}, 채널 ID: {}",
                 userId,
-                result.stream()
-                        .map(channelDto -> channelDto.id() + "")
-                        .collect(Collectors.joining(", ")));
+                channelIdsStr);
         return result;
     }
 
@@ -156,8 +155,9 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         log.info("채널 삭제 시작 - 채널 ID: {}", channelId);
+
         if (!channelRepository.existsById(channelId)) {
-          log.warn("채널 삭제 실패 - 존재하지 않는 채널 ID: {}", channelId);
+            log.warn("채널 삭제 실패 - 존재하지 않는 채널 ID: {}", channelId);
             throw new NoSuchElementException("Channel with id " + channelId + " not found");
         }
 

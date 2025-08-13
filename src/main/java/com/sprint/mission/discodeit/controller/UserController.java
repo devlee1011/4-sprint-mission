@@ -102,7 +102,9 @@ public class UserController implements UserApi {
     @Override
     public ResponseEntity<List<UserDto>> findAll() {
         log.info("사용자 목록 조회 요청");
+
         List<UserDto> users = userService.findAll();
+
         ResponseEntity<List<UserDto>> result = ResponseEntity.status(HttpStatus.OK).body(users);
         log.info("사용자 목록 조회 응답");
         return result;
@@ -120,7 +122,9 @@ public class UserController implements UserApi {
         log.info("사용자 상태 변경 완료 - 사용자 ID: {}, 사용자 상태 ID: {}", userId, updatedUserStatus.id());
 
         ResponseEntity<UserStatusDto> result = ResponseEntity.status(HttpStatus.OK).body(updatedUserStatus);
-        log.info("사용자 상태 변경 응답 - 사용자 상태 ID: {}, 변경된 마지막 로그인 시간: {}", updatedUserStatus.id(), updatedUserStatus.lastActiveAt());
+        log.info("사용자 상태 변경 응답 - 사용자 상태 ID: {}, 변경된 마지막 로그인 시간: {}",
+                updatedUserStatus.id(),
+                updatedUserStatus.lastActiveAt());
         return result;
     }
 

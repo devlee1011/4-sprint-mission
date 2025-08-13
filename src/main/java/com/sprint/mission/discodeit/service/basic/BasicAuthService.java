@@ -6,32 +6,42 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicAuthService implements AuthService {
 
-  private final UserRepository userRepository;
-  private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-  @Transactional(readOnly = true)
-  @Override
-  public UserDto login(LoginRequest loginRequest) {
-    String username = loginRequest.username();
-    String password = loginRequest.password();
+    @Transactional(readOnly = true)
+    @Override
+    public UserDto login(LoginRequest loginRequest) {
+        log.info("로그인 시작 - 사용자명: {}", loginRequest.username());
 
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(
-            () -> new NoSuchElementException("User with username " + username + " not found"));
+        String username = loginRequest.username();
+        String password = loginRequest.password();
 
-    if (!user.getPassword().equals(password)) {
-      throw new IllegalArgumentException("Wrong password");
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> {
+                    log.warn("로그인 실패 - 존재하지 않는 사용자명: {}", username);
+                    return new NoSuchElementException("User with username " + username + " not found");
+                });
+
+        if (!user.getPassword().equals(password)) {
+            log.warn("로그인 실패 - 잘못된 사용자명 혹은 패스워드");
+            throw new IllegalArgumentException("Wrong password");
+        }
+
+        UserDto result = userMapper.toDto(user);
+        log.info("로그인 완료 - 사용자 ID: {}", result.id());
+        return result;
     }
-
-    return userMapper.toDto(user);
-  }
 }

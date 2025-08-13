@@ -11,81 +11,130 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.utility.CollectionToStringUtility;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicReadStatusService implements ReadStatusService {
 
-  private final ReadStatusRepository readStatusRepository;
-  private final UserRepository userRepository;
-  private final ChannelRepository channelRepository;
-  private final ReadStatusMapper readStatusMapper;
+    private final ReadStatusRepository readStatusRepository;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final ReadStatusMapper readStatusMapper;
 
-  @Transactional
-  @Override
-  public ReadStatusDto create(ReadStatusCreateRequest request) {
-    UUID userId = request.userId();
-    UUID channelId = request.channelId();
+    @Transactional
+    @Override
+    public ReadStatusDto create(ReadStatusCreateRequest request) {
+        log.info("읽기 정보 생성 시작 - 사용자 ID: {}, 채널 ID: {}, 마지막으로 읽은 시간: {}",
+                request.userId(),
+                request.channelId(),
+                request.lastReadAt());
 
-    User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new NoSuchElementException("User with id " + userId + " does not exist"));
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " does not exist")
-        );
+        UUID userId = request.userId();
+        UUID channelId = request.channelId();
 
-    if (readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId())) {
-      throw new IllegalArgumentException(
-          "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("읽기 정보 생성 실패 - 존재하지 않는 사용자 ID: {}", userId);
+                    return new NoSuchElementException("User with id " + userId + " does not exist");
+                });
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> {
+                    log.warn("읽기 정보 생성 실패 - 존재하지 않는 채널 ID: {}", channelId);
+                    return new NoSuchElementException("Channel with id " + channelId + " does not exist");
+                });
+
+        if (readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId())) {
+            log.warn("읽기 정보 생성 실패 - 중복 생성 불가, 사용자 ID: {}, 채널 ID: {}", user.getId(), channel.getId());
+            throw new IllegalArgumentException("ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
+        }
+
+        Instant lastReadAt = request.lastReadAt();
+        ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
+        readStatusRepository.save(readStatus);
+        log.info("읽기 정보 저장 - 읽기 정보 ID: {}", readStatus.getId());
+
+        ReadStatusDto result = readStatusMapper.toDto(readStatus);
+        log.info("읽기 정보 생성 완료 - 읽기 정보 ID: {}, 사용자 ID: {}, 채널 ID: {}, 마지막으로 읽은 시간: {}",
+                result.id(),
+                result.userId(),
+                result.channelId(),
+                result.lastReadAt());
+        return result;
     }
 
-    Instant lastReadAt = request.lastReadAt();
-    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
-    readStatusRepository.save(readStatus);
+    @Override
+    public ReadStatusDto find(UUID readStatusId) {
+        log.info("읽기 정보 상세 조회 시작 - 읽기 정보 ID: {}", readStatusId);
 
-    return readStatusMapper.toDto(readStatus);
-  }
-
-  @Override
-  public ReadStatusDto find(UUID readStatusId) {
-    return readStatusRepository.findById(readStatusId)
-        .map(readStatusMapper::toDto)
-        .orElseThrow(
-            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
-  }
-
-  @Override
-  public List<ReadStatusDto> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUserId(userId).stream()
-        .map(readStatusMapper::toDto)
-        .toList();
-  }
-
-  @Transactional
-  @Override
-  public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
-    Instant newLastReadAt = request.newLastReadAt();
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-        .orElseThrow(
-            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
-    readStatus.update(newLastReadAt);
-    return readStatusMapper.toDto(readStatus);
-  }
-
-  @Transactional
-  @Override
-  public void delete(UUID readStatusId) {
-    if (!readStatusRepository.existsById(readStatusId)) {
-      throw new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+        ReadStatusDto result = readStatusRepository.findById(readStatusId)
+                .map(readStatusMapper::toDto)
+                .orElseThrow(() -> {
+                    log.warn("읽기 정보 상세 조회 실패 - 존재하지 않는 읽기 정보 ID: {}", readStatusId);
+                    return new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+                });
+        log.info("읽기 정보 상세 조회 완료 - 읽기 정보 ID: {}", result.id());
+        return result;
     }
-    readStatusRepository.deleteById(readStatusId);
-  }
+
+    @Override
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
+        log.info("해당 사용자에 대한 읽기 정보 목록 조회 시작 - 사용자 ID: {}", userId);
+
+        List<ReadStatusDto> result = readStatusRepository.findAllByUserId(userId).stream()
+                .map(readStatusMapper::toDto)
+                .toList();
+
+        String readStatusIdsStr = CollectionToStringUtility.joinToStringByComma(result.stream().map(ReadStatusDto::id).toList());
+        log.info("해당 사용자에 대한 읽기 정보 목록 조회 완료 - 사용자 ID: {}, 읽기 정보 ID: {}",
+                userId,
+                readStatusIdsStr);
+        return result;
+    }
+
+    @Transactional
+    @Override
+    public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
+        log.info("읽기 정보 수정 시작 - 읽기 정보 ID: {}, 요청 마지막으로 읽은 시간: {}",
+                readStatusId,
+                request.newLastReadAt());
+
+        Instant newLastReadAt = request.newLastReadAt();
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+                .orElseThrow(() -> {
+                    log.warn("읽기 정보 수정 실패 - 존재하지 않는 읽기 정보 ID: {}", readStatusId);
+                    return new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+                });
+        readStatus.update(newLastReadAt);
+
+        ReadStatusDto result = readStatusMapper.toDto(readStatus);
+        log.info("읽기 정보 수정 완료 - 읽기 정보 ID: {}, 변경된 마지막으로 읽은 시간: {}",
+                result.id(),
+                result.lastReadAt());
+        return result;
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID readStatusId) {
+        log.info("읽기 정보 삭제 시작 - 읽기 정보 ID: {}", readStatusId);
+
+        if (!readStatusRepository.existsById(readStatusId)) {
+            log.warn("읽기 정보 삭제 실패 - 존재하지 않는 읽기 정보 ID: {}", readStatusId);
+            throw new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+        }
+
+        readStatusRepository.deleteById(readStatusId);
+        log.info("읽기 정보 삭제 완료 - 읽기 정보 ID: {}", readStatusId);
+    }
 }

@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.utility.BinaryContentSaveUtility;
@@ -31,7 +30,6 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
@@ -41,6 +39,7 @@ public class BasicUserService implements UserService {
     public UserDto create(UserCreateRequest userCreateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         log.info("사용자 생성 시작 - 사용자명: {}", userCreateRequest.username());
+
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
         String password = userCreateRequest.password();
@@ -60,14 +59,14 @@ public class BasicUserService implements UserService {
                 binaryContentStorage);
 
         User user = new User(username, email, password, nullableProfile);
-        log.info("사용자 생성 성공 - 사용자 ID: {}", user.getId());
 
         Instant now = Instant.now();
         UserStatus userStatus = new UserStatus(user, now);
-        log.info("사용자 상태 생성 - 사용자 상태 ID: {}", userStatus.getId());
 
         userRepository.save(user);
-        log.info("사용자 저장 - 사용자 ID: {}", user.getId());
+        log.info("사용자, 사용자 상태 정보 저장 - 사용자 ID: {}, 사용자 상태 ID: {}",
+                user.getId(),
+                userStatus.getId());
 
         UserDto result = userMapper.toDto(user);
         log.info("사용자 생성 완료 - 사용자 ID: {}, 사용자명: {}, 이메일: {}, 프로필 ID: {}, 온라인 상태: {}",
@@ -114,7 +113,7 @@ public class BasicUserService implements UserService {
                 userId,
                 userUpdateRequest.newUsername(),
                 userUpdateRequest.newEmail());
-        
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("사용자 수정 실패 - 존재하지 않는 사용자 ID: {}", userId);
@@ -154,6 +153,7 @@ public class BasicUserService implements UserService {
             log.warn("사용자 삭제 실패 - 존재하지 않는 사용자 ID: {}", userId);
             throw new NoSuchElementException("User with id " + userId + " not found");
         }
+
         userRepository.deleteById(userId);
         log.info("사용자 삭제 완료 - 사용자 ID: {}", userId);
     }

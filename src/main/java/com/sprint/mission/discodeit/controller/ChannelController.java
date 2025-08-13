@@ -6,24 +6,15 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import com.sprint.mission.discodeit.utility.CollectionToStringUtility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -51,10 +42,8 @@ public class ChannelController implements ChannelApi {
 
     @PostMapping(path = "private")
     public ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest request) {
-        log.info("비공개 채널 생성 요청 - 참여자 ID: {}",
-                request.participantIds().stream()
-                        .map(id -> id + "")
-                        .collect(Collectors.joining(", ")));
+        String participantIdsStr = CollectionToStringUtility.joinToStringByComma(request.participantIds());
+        log.info("비공개 채널 생성 요청 - 참여자 ID: {}", participantIdsStr);
 
         ChannelDto createdChannel = channelService.create(request);
         log.info("비공개 채널 생성 완료 - 채널 ID: {}", createdChannel.id());
@@ -105,11 +94,10 @@ public class ChannelController implements ChannelApi {
         log.info("해당 사용자가 참여중인 채널 목록 조회 완료 - 사용자 ID: {}", userId);
 
         ResponseEntity<List<ChannelDto>> result = ResponseEntity.status(HttpStatus.OK).body(channels);
+        String participantIdsStr = CollectionToStringUtility.joinToStringByComma(channels.stream().map(ChannelDto::id).toList());
         log.info("해당 사용자가 참여중인 채널 목록 조회 응답 - 사용자 ID: {}, 채널 ID: {}",
                 userId,
-                channels.stream()
-                        .map(channelDto -> channelDto.id() + "")
-                        .collect(Collectors.joining(", ")));
+                participantIdsStr);
         return result;
     }
 }
