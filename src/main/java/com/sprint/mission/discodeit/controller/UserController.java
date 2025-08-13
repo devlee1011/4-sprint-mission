@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ public class UserController implements UserApi {
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
     public ResponseEntity<UserDto> create(
-            @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+            @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         log.info("사용자 생성 요청 - 사용자명: {}", userCreateRequest.username());
@@ -62,7 +63,7 @@ public class UserController implements UserApi {
     @Override
     public ResponseEntity<UserDto> update(
             @PathVariable("userId") UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+            @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         log.info("사용자 수정 요청 - 사용자 ID: {}, 요청 사용자명: {}, 요청 이메일: {}",
@@ -113,7 +114,7 @@ public class UserController implements UserApi {
     @PatchMapping(path = "{userId}/userStatus")
     @Override
     public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
-                                                                  @RequestBody UserStatusUpdateRequest request) {
+                                                                  @Valid @RequestBody UserStatusUpdateRequest request) {
         log.info("사용자 상태 변경 요청 - 사용자 ID: {}, 요청 마지막 로그인 시간: {}",
                 userId,
                 request.newLastActiveAt());

@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.dto.request;
 
+import com.sprint.mission.discodeit.validation.NotBlankIfPresent;
+
 public record MessageUpdateRequest(
-    String newContent
+        @NotBlankIfPresent
+        String newContent
 ) {
 
 }

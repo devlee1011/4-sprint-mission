@@ -1,8 +1,12 @@
 package com.sprint.mission.discodeit.dto.request;
 
+import com.sprint.mission.discodeit.validation.NotBlankIfPresent;
+
 public record PublicChannelUpdateRequest(
-    String newName,
-    String newDescription
+        @NotBlankIfPresent
+        String newName,
+        @NotBlankIfPresent
+        String newDescription
 ) {
 
 }

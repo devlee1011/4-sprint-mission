@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.utility.CollectionToStringUtility;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class ReadStatusController implements ReadStatusApi {
     private final ReadStatusService readStatusService;
 
     @PostMapping
-    public ResponseEntity<ReadStatusDto> create(@RequestBody ReadStatusCreateRequest request) {
+    public ResponseEntity<ReadStatusDto> create(@Valid @RequestBody ReadStatusCreateRequest request) {
         log.info("읽기 정보 생성 요청 - 사용자 ID: {}, 채널 ID: {}, 마지막으로 읽은 시간: {}",
                 request.userId(),
                 request.channelId(),
@@ -44,7 +45,7 @@ public class ReadStatusController implements ReadStatusApi {
 
     @PatchMapping(path = "{readStatusId}")
     public ResponseEntity<ReadStatusDto> update(@PathVariable("readStatusId") UUID readStatusId,
-                                                @RequestBody ReadStatusUpdateRequest request) {
+                                                @Valid @RequestBody ReadStatusUpdateRequest request) {
         log.info("읽기 정보 수정 요청 - 읽기 정보 ID: {}, 요청 마지막으로 읽은 시간: {}",
                 readStatusId,
                 request.newLastReadAt());

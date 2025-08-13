@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.utility.CollectionToStringUtility;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +38,7 @@ public class MessageController implements MessageApi {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageDto> create(
-            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+            @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
         log.info("메시지 생성 요청 - 메시지 콘텐츠: {}, 채널 ID: {}, 작성자 ID: {}",
@@ -62,7 +63,7 @@ public class MessageController implements MessageApi {
 
     @PatchMapping(path = "{messageId}")
     public ResponseEntity<MessageDto> update(@PathVariable("messageId") UUID messageId,
-                                             @RequestBody MessageUpdateRequest request) {
+                                             @Valid @RequestBody MessageUpdateRequest request) {
         log.info("메시지 수정 요청 - 메시지 ID: {}, 요청 메시지 콘텐츠: {}",
                 messageId,
                 request.newContent());
