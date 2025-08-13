@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -15,7 +16,7 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleException(IllegalArgumentException e) {
-        log.warn("검증 실패 - 에러 메시지: {}", e.getMessage());
+        log.warn("잘못된 입력값 - 에러 메시지: {}", e.getMessage());
         ErrorResponse result = new ErrorResponse(
                 Instant.now(),
                 "IllegalArgumentException",
@@ -46,6 +47,23 @@ public class GlobalExceptionHandler {
                 .body(result);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
+        log.warn("검증 실패 - 에러 메시지: {}", e.getMessage());
+        ErrorResponse result = new ErrorResponse(
+                Instant.now(),
+                null,
+                e.getMessage(),
+                null,
+                e.getClass().getName(),
+                400
+        );
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(result);
+    }
+
+    // 전역 예외 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         log.error("예기치 못한 오류 발생 - 에러 메시지: {}", e.getMessage());
