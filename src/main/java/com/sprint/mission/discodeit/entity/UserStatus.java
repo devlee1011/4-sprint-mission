@@ -2,17 +2,12 @@ package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.time.Duration;
-import java.time.Instant;
-import lombok.AccessLevel;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Entity
 @Table(name = "user_statuses")
