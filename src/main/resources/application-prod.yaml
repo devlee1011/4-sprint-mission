@@ -19,3 +19,15 @@ logging:
     root: info
     com.sprint.mission.discodeit: error
     org.hibernate.SQL: debug
+
+management:
+  endpoint:
+    health:
+      show-details: when_authorized
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+    info:
+      env:
+        enabled: true
