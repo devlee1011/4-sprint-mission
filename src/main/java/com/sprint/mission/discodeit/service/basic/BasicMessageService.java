@@ -44,8 +44,7 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
-    private final BinaryContentStorage binaryContentStorage;
-    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentSaveUtility binaryContentSaveUtility;
     private final PageResponseMapper pageResponseMapper;
 
     @Transactional
@@ -72,13 +71,10 @@ public class BasicMessageService implements MessageService {
                     return new UserNotFoundException(authorId);
                 });
 
-        // 첨부 파일 저장 (toNullableProfile에 로그 메시지 있음)
+        // 첨부 파일 저장 (toNullableFile에 로그 메시지 있음)
         List<BinaryContent> attachments = binaryContentCreateRequests.stream()
-                .map(request -> BinaryContentSaveUtility.toNullableProfile(Optional.ofNullable(request),
-                        binaryContentRepository,
-                        binaryContentStorage))
+                .map(request -> binaryContentSaveUtility.toNullableFile(Optional.ofNullable(request)))
                 .toList();
-
 
         Message message = new Message(
                 content,

@@ -20,7 +20,7 @@ import org.hibernate.annotations.BatchSize;
 @Entity
 @Table(name = "messages")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class Message extends BaseUpdatableEntity {
 
   @Column(columnDefinition = "text", nullable = false)

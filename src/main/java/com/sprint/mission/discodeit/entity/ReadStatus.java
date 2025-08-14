@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
     }
 )
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class ReadStatus extends BaseUpdatableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)

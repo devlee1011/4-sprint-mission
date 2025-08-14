@@ -33,8 +33,7 @@ public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentSaveUtility binaryContentSaveUtility;
 
     @Transactional
     @Override
@@ -55,10 +54,8 @@ public class BasicUserService implements UserService {
             throw new UsernameDuplicateException(username);
         }
 
-        // 프로필 파일 저장 (toNullableProfile에 로그 메시지 있음)
-        BinaryContent nullableProfile = BinaryContentSaveUtility.toNullableProfile(optionalProfileCreateRequest,
-                binaryContentRepository,
-                binaryContentStorage);
+        // 프로필 파일 저장 (toNullableFile에 로그 메시지 있음)
+        BinaryContent nullableProfile = binaryContentSaveUtility.toNullableFile(optionalProfileCreateRequest);
 
         User user = new User(username, email, password, nullableProfile);
 
@@ -135,10 +132,8 @@ public class BasicUserService implements UserService {
             throw new UsernameDuplicateException(newUsername);
         }
 
-        // 프로필 파일 저장 (toNullableProfile에 로그 메시지 있음)
-        BinaryContent nullableProfile = BinaryContentSaveUtility.toNullableProfile(optionalProfileCreateRequest,
-                binaryContentRepository,
-                binaryContentStorage);
+        // 프로필 파일 저장 (toNullableFile에 로그 메시지 있음)
+        BinaryContent nullableProfile = binaryContentSaveUtility.toNullableFile(optionalProfileCreateRequest);
 
         user.update(newUsername, newEmail, newPassword, nullableProfile);
         UserDto result = userMapper.toDto(user);
