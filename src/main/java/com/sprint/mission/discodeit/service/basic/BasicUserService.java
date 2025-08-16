@@ -70,7 +70,7 @@ public class BasicUserService implements UserService {
                 result.id(),
                 result.username(),
                 result.email(),
-                result.profile().id(),
+                result.profile() != null ? result.profile().id() : null,
                 result.online());
         return result;
     }
@@ -106,10 +106,14 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-        log.info("사용자 수정 시작 - 사용자 ID: {}, 요청 사용자명: {}, 요청 이메일: {}",
+        String requestedProfileName = optionalProfileCreateRequest.map(BinaryContentCreateRequest::fileName)
+                        .orElse(null);
+        log.info("사용자 수정 시작 - 사용자 ID: {}, 요청 사용자명: {}, 요청 이메일: {}, 요청 프로필 파일명: {}",
                 userId,
                 userUpdateRequest.newUsername(),
-                userUpdateRequest.newEmail());
+                userUpdateRequest.newEmail(),
+                requestedProfileName
+                );
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -135,7 +139,11 @@ public class BasicUserService implements UserService {
 
         user.update(newUsername, newEmail, newPassword, nullableProfile);
         UserDto result = userMapper.toDto(user);
-        log.info("사용자 수정 완료 - 사용자 ID: {}, 변경된 사용자명: {}, 변경된 이메일: {}", userId, result.username(), result.email());
+        log.info("사용자 수정 완료 - 사용자 ID: {}, 변경된 사용자명: {}, 변경된 이메일: {}, 변경된 프로필 ID: {}",
+                userId,
+                result.username(),
+                result.email(),
+                result.profile() != null ? result.profile().id() : null);
         return result;
     }
 
