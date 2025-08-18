@@ -17,7 +17,6 @@ import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.utility.BinaryContentSaveUtility;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,8 +49,6 @@ class BasicMessageServiceTest {
     private UserRepository userRepository;
     @Mock
     private MessageMapper messageMapper;
-    @Mock
-    private BinaryContentSaveUtility binaryContentSaveUtility;
     @Mock
     private PageResponseMapper pageResponseMapper;
 
