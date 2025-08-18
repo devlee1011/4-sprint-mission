@@ -88,10 +88,10 @@ public class BasicMessageService implements MessageService {
         String attachmentsStr = CollectionToStringUtility.joinToStringByComma(message.getAttachments().stream()
                 .map(BinaryContent::getId).toList());
         log.info("메시지 생성 완료 - 메시지 ID: {}, 채널 ID: {}, 작성자 ID: {}, 메시지 콘텐츠: {}, 첨부 파일 ID: {}",
-                message.getId(),
-                message.getChannel().getId(),
-                message.getAuthor().getId(),
-                message.getContent(),
+                result.id(),
+                result.channelId(),
+                result.author().id(),
+                result.content(),
                 attachmentsStr);
         return result;
     }
