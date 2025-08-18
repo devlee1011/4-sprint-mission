@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -69,9 +70,9 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
         log.info("비공개 채널 저장 - 채널 ID: {}", channel.getId());
 
-        List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
-                .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
-                .toList();
+        List<User> participants = userRepository.findAllById(request.participantIds());
+        List<ReadStatus> readStatuses = getReadStatuses(participants, channel);
+
         readStatusRepository.saveAll(readStatuses);
         log.info("읽기 정보 저장 - 읽기 정보 ID: {}", readStatuses.stream()
                 .map(readStatus -> readStatus.getId() + "")
@@ -85,6 +86,12 @@ public class BasicChannelService implements ChannelService {
         return result;
     }
 
+    private List<ReadStatus> getReadStatuses(List<User> participants, Channel channel) {
+        return participants.stream()
+                .map(participant -> new ReadStatus(participant, channel, channel.getCreatedAt()))
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     @Override
     public ChannelDto find(UUID channelId) {
@@ -96,7 +103,7 @@ public class BasicChannelService implements ChannelService {
                     log.warn("채널 상세 조회 실패 - 존재하지 않는 채널 ID: {}", channelId);
                     return new ChannelNotFoundException(channelId);
                 });
-        log.info("채널 상세 조회 완료 - 채널 ID: {}, 채널 타입: {}", channelId, result);
+        log.info("채널 상세 조회 완료 - 채널 ID: {}, 채널 타입: {}", channelId, result.type());
         return result;
     }
 
@@ -105,21 +112,24 @@ public class BasicChannelService implements ChannelService {
     public List<ChannelDto> findAllByUserId(UUID userId) {
         log.info("해당 사용자가 참여중인 채널 목록 조회 시작 - 사용자 ID: {}", userId);
 
-        List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatus::getChannel)
-                .map(Channel::getId)
-                .toList();
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
+        List<UUID> mySubscribedChannelIds = getSubscribedChannelIds(readStatuses);
 
-        List<ChannelDto> result = channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
-                .stream()
-                .map(channelMapper::toDto)
-                .toList();
+        List<Channel> channels = channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds);
+        List<ChannelDto> result = channels.stream().map(channelMapper::toDto).toList();
 
         String channelIdsStr = CollectionToStringUtility.joinToStringByComma(result.stream().map(ChannelDto::id).toList());
         log.info("해당 사용자가 참여중인 채널 목록 조회 완료 - 사용자 ID: {}, 채널 ID: {}",
                 userId,
                 channelIdsStr);
         return result;
+    }
+
+    private List<UUID> getSubscribedChannelIds(List<ReadStatus> readStatuses) {
+        return readStatuses.stream()
+                .map(ReadStatus::getChannel)
+                .map(Channel::getId)
+                .toList();
     }
 
     @Transactional
@@ -146,9 +156,10 @@ public class BasicChannelService implements ChannelService {
         channel.update(newName, newDescription);
         ChannelDto result = channelMapper.toDto(channel);
         log.info("공개 채널 수정 완료 - 채널 ID: {}, 변경된 채널명: {}, 변경된 채널 설명: {}",
-                channel.getId(),
-                channel.getName(),
-                channel.getDescription());
+                result.id(),
+                result.name(),
+                result.description()
+        );
         return result;
     }
 
