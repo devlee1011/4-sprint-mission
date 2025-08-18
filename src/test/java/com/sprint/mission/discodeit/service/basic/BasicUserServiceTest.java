@@ -38,7 +38,7 @@ class BasicUserServiceTest {
     private UserMapper userMapper;
 
     @Mock
-    BinaryContentSaveUtility binaryContentSaveUtility;
+    private BinaryContentSaveUtility binaryContentSaveUtility;
 
     @InjectMocks
     private BasicUserService userService;
@@ -157,7 +157,7 @@ class BasicUserServiceTest {
         // given
         UUID userId = UUID.randomUUID();
     
-        // 존재하는 유저
+        // 존재하는 유저인지 확인
         given(userRepository.findById(userId))
                 .willReturn(Optional.of(new User("kkumi", "kkumi@cat.cat", "kkumi1234", null)));
 
@@ -222,6 +222,7 @@ class BasicUserServiceTest {
 
         // then
         assertAll(
+                () -> assertEquals(1, actualResponse.size()),
                 () -> assertEquals(response.id(), actualResponse.get(0).id()),
                 () -> assertEquals(response.username(), actualResponse.get(0).username()),
                 () -> assertEquals(response.email(), actualResponse.get(0).email()),
@@ -248,7 +249,7 @@ class BasicUserServiceTest {
         String newEmail = userUpdateRequest.newEmail();
         String newPassword = userUpdateRequest.newPassword();
 
-        // 존재하는 유저
+        // 존재하는 유저인지 확인
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         
         // 이메일 중복 검증 통과
@@ -323,7 +324,7 @@ class BasicUserServiceTest {
                 "kkumi12345"
         );
 
-        // 존재하는 유저
+        // 존재하는 유저인지 확인
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         // 이메일 중복 검증 실패 -> EmailDuplicateException
@@ -349,7 +350,7 @@ class BasicUserServiceTest {
                 "kkumi12345"
         );
 
-        // 존재하는 유저
+        // 존재하는 유저인지 확인
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         // 이메일 중복 검증 통과
@@ -372,7 +373,7 @@ class BasicUserServiceTest {
         // given
         UUID userId = UUID.randomUUID();
         
-        // 존재하는 유저
+        // 존재하는 유저인지 확인
         given(userRepository.existsById(userId))
                 .willReturn(true);
 
