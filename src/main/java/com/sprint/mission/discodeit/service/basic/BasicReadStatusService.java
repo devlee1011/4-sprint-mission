@@ -41,7 +41,8 @@ public class BasicReadStatusService implements ReadStatusService {
         log.info("읽기 정보 생성 시작 - 사용자 ID: {}, 채널 ID: {}, 마지막으로 읽은 시간: {}",
                 request.userId(),
                 request.channelId(),
-                request.lastReadAt());
+                request.lastReadAt()
+        );
 
         UUID userId = request.userId();
         UUID channelId = request.channelId();
@@ -57,8 +58,8 @@ public class BasicReadStatusService implements ReadStatusService {
                     return new ChannelNotFoundException(channelId);
                 });
 
-        if (readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId())) {
-            log.warn("읽기 정보 생성 실패 - 중복 생성 불가, 사용자 ID: {}, 채널 ID: {}", user.getId(), channel.getId());
+        if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
+            log.warn("읽기 정보 생성 실패 - 중복 생성 불가, 사용자 ID: {}, 채널 ID: {}", userId, channelId);
             throw new ReadStatusDuplicateException(userId, channelId);
         }
 
