@@ -21,4 +21,4 @@ ENV PROJECT_VERSION=1.2-M8
 ENV JVM_OPTS=""
 
 # 8. 실행 명령어 (환경 변수 활용)
-CMD ["sh", "-c", "java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar \"$@\"", "--"]
