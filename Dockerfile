@@ -18,7 +18,7 @@ ENV PROJECT_NAME=discodeit
 ENV PROJECT_VERSION=1.2-M8
 
 # 7. 환경 변수 (JVM 옵션, 기본값은 빈 문자열)
-ENV JVM_OPTS=""
+ENV JVM_OPTS="-Duser.timezone=Asia/Seoul"
 
 # 8. 실행 명령어 (환경 변수 활용)
 ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar \"$@\"", "--"]
