@@ -1,17 +1,14 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.config.AwsProperties;
-import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -19,34 +16,34 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
-import java.io.InputStream;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
-public class S3BinaryContentStorage implements BinaryContentStorage {
+public class AWSS3Test {
 
     private final AwsProperties props;
 
     @Value("${discodeit.storage.local.root-path}")
     private String rootPath;
 
-    @Override
-    public UUID put(UUID binaryContentId, byte[] bytes) {
-        String bucket = props.getS3().getBucket();
-
+    // 업로드 후 퍼블릭 URL 반환
+    public String upload(BinaryContent binaryContent, byte[] bytes) {
         try {
-            // 1) 키 생성 규칙: rootPath/id
-            String key = makeS3ObjectKey(binaryContentId);
+            // 1) 키 생성 규칙: rootPath/YYYY/MM/id.원본확장자
+            String key = makeS3ObjectKey(binaryContent);
 
             // 2) PutObjectRequest 생성 (버킷 정책이 퍼블릭 읽기면 acl 생략해도 됨)
             PutObjectRequest putReq = PutObjectRequest.builder()
-                    .bucket(bucket)
+                    .bucket(props.getS3().getBucket())
                     .key(key)
-                    .contentLength((long) bytes.length)
+                    .contentType(binaryContent.getContentType())
+                    // .acl(ObjectCannedACL.PUBLIC_READ) // 필요 시 주석 해제
                     .build();
 
             // 3) 업로드
@@ -54,44 +51,22 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             s3Client.putObject(putReq,
                     software.amazon.awssdk.core.sync.RequestBody.fromBytes(bytes));
 
-            return binaryContentId;
+            // 4) 퍼블릭 URL 생성 후 반환
+            return buildPublicUrl(props.getS3().getBucket(), props.getRegion(), key);
 
         } catch (Exception e) {
             throw new RuntimeException("S3 업로드 실패", e);
         }
     }
 
-    @Override
-    public InputStream get(UUID binaryContentId) {
+    public ResponseEntity<Void> download(String filename) {
         String bucket = props.getS3().getBucket();
-        String key = makeS3ObjectKey(binaryContentId);
-
-        try {
-            S3Client s3Client = getS3Client();
-
-            GetObjectRequest getReq = GetObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(key)
-                    .build();
-
-            // InputStream 반환 (호출자가 닫아줘야 함)
-            return s3Client.getObject(getReq, ResponseTransformer.toInputStream());
-
-        } catch (Exception e) {
-            throw new RuntimeException("S3 다운로드 실패", e);
-        }
-    }
-
-    @Override
-    public ResponseEntity<Void> download(BinaryContentDto metaData) {
-        String bucket = props.getS3().getBucket();
-        String binaryContentId = metaData.id().toString();
-        String key = rootPath + "/" + binaryContentId;
+        String key = rootPath + "/" + filename;
 
         GetObjectRequest getReq = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
-                .responseContentDisposition("attachment; filename=\"" + binaryContentId + "\"")
+                .responseContentDisposition("attachment; filename=\"" + filename + "\"")
                 .build();
 
         GetObjectPresignRequest preReq = GetObjectPresignRequest.builder()
@@ -102,6 +77,14 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         S3Presigner s3Presigner = getS3Presigner();
         String signed = s3Presigner.presignGetObject(preReq).url().toString();
         return ResponseEntity.status(302).location(URI.create(signed)).build();
+    }
+
+
+    /**
+     * 컨트롤러 등에서 key → 퍼블릭 URL 변환이 필요할 때 호출
+     */
+    public String toPublicUrl(String key) {
+        return buildPublicUrl(props.getS3().getBucket(), props.getRegion(), key);
     }
 
     public S3Client getS3Client() {
@@ -148,7 +131,33 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     // 객체 key 값 생성
+    private String makeS3ObjectKey(BinaryContent binaryContent) {
+        UUID binaryContentId = binaryContent.getId();
+        String originalFilename = binaryContent.getFileName();
+        String ext = "";  // 확장자
+        if (originalFilename != null && originalFilename.contains(".")) {
+            ext = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+        }
+
+        LocalDate today = LocalDate.now();
+        String datePath = "%04d/%02d".formatted(today.getYear(), today.getMonthValue());
+        String filename = binaryContentId + (ext.isEmpty() ? "" : "." + ext);
+        return rootPath + "/" + datePath + "/" + filename;
+    }
+
+
+    private String buildPublicUrl(String bucket, String region, String key) {
+        String encodedKey = URLEncoder.encode(key, StandardCharsets.UTF_8).replace("+", "%20");
+        if (region == null || region.isBlank() || "us-east-1".equals(region)) {
+            return "https://" + bucket + ".s3.amazonaws.com/" + encodedKey;
+        }
+        return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + encodedKey;
+    }
+
+
+    // 객체 key 값 생성
     private String makeS3ObjectKey(UUID binaryContentId) {
         return rootPath + "/" + binaryContentId;
     }
+
 }
