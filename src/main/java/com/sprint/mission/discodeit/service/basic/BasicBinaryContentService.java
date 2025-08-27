@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.storage.s3.AWSS3Test;
+import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,9 +26,8 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
   //
-  private final AWSS3Test awsS3Test;
+  private final S3BinaryContentStorage s3BinaryContentStorage;
 
-  // AWSS3Test 적용하기
   @Transactional
   @Override
   public BinaryContentDto create(BinaryContentCreateRequest request) {
@@ -45,7 +44,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     );
     binaryContentRepository.save(binaryContent);
     binaryContentStorage.put(binaryContent.getId(), bytes);
-    awsS3Test.store(binaryContent, bytes);
+    s3BinaryContentStorage.put(binaryContent.getId(), bytes);
 
     log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}", 
         binaryContent.getId(), fileName, bytes.length);
