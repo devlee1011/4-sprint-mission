@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.0'
+    id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'jacoco'
 }
@@ -41,7 +41,8 @@ dependencies {
     testImplementation 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    implementation 'software.amazon.awssdk:s3:2.31.7'
+    implementation 'software.amazon.awssdk:s3:2.20.70'
+    implementation 'software.amazon.awssdk:auth:2.20.70'
 }
 
 tasks.named('test') {
