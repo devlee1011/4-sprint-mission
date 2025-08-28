@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS binary_contents
 );
 
 -- UserStatus
-CREATE TABLEIF NOT EXISTS  user_statuses
+CREATE TABLE IF NOT EXISTS  user_statuses
 (
     id             uuid PRIMARY KEY,
     created_at     timestamp with time zone NOT NULL,
