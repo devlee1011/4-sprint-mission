@@ -15,7 +15,7 @@ services:
       TZ: Asia/Seoul
       JVM_OPTS: "-Duser.timezone=Asia/Seoul"
     ports:
-      - "8081:8081"
+      - "80:8081"
     networks:
       - backend
 
