@@ -1,33 +1,29 @@
-# 1. Amazon Corretto 17 이미지 사용
-FROM amazoncorretto:17
+# 빌드 단계: 도구/캐시 전용
+FROM gradle:8.8-jdk17 AS builder
+WORKDIR /build
 
-# 2. 작업 디렉토리 설정
-WORKDIR /app
+# 1. 변경 빈도 낮은 Gradle 메타 먼저 복사
+COPY gradlew gradlew
+COPY gradle gradle
+COPY build.gradle build.gradle
+COPY settings.gradle settings.gradle
+RUN ./gradlew --no-daemon build -x test || true \
+ && ./gradlew --no-daemon dependencies || true
 
-# 3. gradlew와 필요한 파일 복사 (gradlew 반드시 포함!)
-COPY gradlew /app/gradlew
-COPY gradle /app/gradle
-COPY build.gradle /app/
-COPY settings.gradle /app/
-COPY src /app/src
 
-# 4. dos2unix 설치 후 gradlew 권한/줄바꿈 변환
-RUN yum install -y dos2unix && \
-    dos2unix /app/gradlew && \
-    chmod +x /app/gradlew
+# 2. 소스 코드는 나중에 복사함 - 의존성 재다운로드 방지
+COPY src ./src
+RUN ./gradlew --no-daemon clean bootJar -x test
 
-# 5. gradlew 빌드 실행
-RUN ./gradlew clean build -x test
 
-# 6. 포트 노출
-EXPOSE 80
-
-# 7. 환경 변수 (프로젝트 정보)
+# 환경 변수 설정
 ENV PROJECT_NAME=discodeit
 ENV PROJECT_VERSION=1.2-M8
-
-# 8. 환경 변수 (JVM 옵션, 기본값은 빈 문자열)
 ENV JVM_OPTS=""
 
-# 9. 실행 명령어
+# 실행 단계: 경량 런타임만 포함
+FROM amazoncorretto:17
+WORKDIR /app
+COPY --from=builder /build/build/libs/*.jar build/libs/
+EXPOSE 80
 ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar \"$@\"", "--"]
