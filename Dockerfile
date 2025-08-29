@@ -16,14 +16,16 @@ COPY src ./src
 RUN ./gradlew --no-daemon clean bootJar -x test
 
 
-# 환경 변수 설정
+# 실행 단계: 경량 런타임만 포함
+FROM amazoncorretto:17
+WORKDIR /app
+
+# 1. 환경 변수 설정
 ENV PROJECT_NAME=discodeit
 ENV PROJECT_VERSION=1.2-M8
 ENV JVM_OPTS=""
 
-# 실행 단계: 경량 런타임만 포함
-FROM amazoncorretto:17
-WORKDIR /app
-COPY --from=builder /build/build/libs/*.jar build/libs/
+# 카피 및 실행
+COPY --from=builder /build/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar
 EXPOSE 80
 ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar \"$@\"", "--"]
