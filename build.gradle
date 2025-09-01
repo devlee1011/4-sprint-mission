@@ -5,6 +5,10 @@ plugins {
     id 'jacoco'
 }
 
+jacoco {
+    toolVersion = "0.8.10"
+}
+
 group = 'com.sprint.mission'
 version = '1.2-M8'
 
