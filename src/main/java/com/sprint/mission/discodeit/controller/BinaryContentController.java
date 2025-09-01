@@ -1,0 +1,103 @@
+package com.sprint.mission.discodeit.controller;
+
+import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/binaryContents")
+public class BinaryContentController implements BinaryContentApi {
+
+    private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
+
+    @PostMapping
+    public ResponseEntity<BinaryContentDto> create(@RequestPart MultipartFile file) {
+        BinaryContentCreateRequest request;
+        try {
+            request = new BinaryContentCreateRequest(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        BinaryContentDto binaryContent = binaryContentService.create(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(binaryContent);
+    }
+
+
+    @GetMapping(path = "{binaryContentId}")
+    public ResponseEntity<BinaryContentDto> find(
+            @PathVariable("binaryContentId") UUID binaryContentId) {
+        log.info("바이너리 컨텐츠 조회 요청: id={}", binaryContentId);
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+        log.debug("바이너리 컨텐츠 조회 응답: {}", binaryContent);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(binaryContent);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
+            @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+        log.info("바이너리 컨텐츠 목록 조회 요청: ids={}", binaryContentIds);
+        List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+        log.debug("바이너리 컨텐츠 목록 조회 응답: count={}", binaryContents.size());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(binaryContents);
+    }
+
+    @GetMapping(path = "{binaryContentId}/download")
+    public ResponseEntity<?> download(
+            @PathVariable("binaryContentId") UUID binaryContentId) {
+        log.info("바이너리 컨텐츠 다운로드 요청: id={}", binaryContentId);
+        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+        ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
+        log.debug("바이너리 컨텐츠 다운로드 응답: contentType={}, contentLength={}",
+                response.getHeaders().getContentType(), response.getHeaders().getContentLength());
+        return response;
+    }
+
+    @GetMapping("{binaryContentId}/get")
+    public ResponseEntity<?> get(@PathVariable("binaryContentId") UUID binaryContentId) {
+        log.info("바이너리 컨텐츠 InputStream 다운로드 요청 - AWS S3: id={}", binaryContentId);
+        try {
+            InputStream inputStream = binaryContentStorage.get(binaryContentId);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", binaryContentId.toString());
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+            ResponseEntity<?> response = ResponseEntity.ok().headers(headers).body(new InputStreamResource(inputStream));
+            log.debug("바이너리 컨텐츠 InputStream 다운로드 응답 - AWS S3: contentType={}, contentLength={}",
+                    response.getHeaders().getContentType(), response.getHeaders().getContentLength());
+            return response;
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+}
