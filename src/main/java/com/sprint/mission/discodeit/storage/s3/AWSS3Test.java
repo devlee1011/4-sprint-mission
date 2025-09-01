@@ -27,18 +27,29 @@ public class AWSS3Test {
     @Value("${discodeit.storage.local.root-path}")
     private String rootPath;
 
-    @Value("${discodeit.storage.s3.access-key}")
-    private String accessKey;
+//    @Value("${discodeit.storage.s3.access-key}")
+//    private String accessKey;
+//
+//    @Value("${discodeit.storage.s3.secret-key}")
+//    private String secretKey;
+//
+//    @Value("${discodeit.storage.s3.region}")
+//    private String region;
+//
+//    @Value("${discodeit.storage.s3.bucket}")
+//    private String bucket;
 
-    @Value("${discodeit.storage.s3.secret-key}")
-    private String secretKey;
+    private final String accessKey;
+    private final String secretKey;
+    private final String region;
+    private final String bucket;
 
-    @Value("${discodeit.storage.s3.region}")
-    private String region;
-
-    @Value("${discodeit.storage.s3.bucket}")
-    private String bucket;
-
+    public AWSS3Test() {
+        accessKey = System.getenv("AWS_ACCESS_KEY");
+        secretKey = System.getenv("AWS_SECRET_KEY");
+        region = System.getenv("AWS_REGION");
+        bucket = System.getenv("AWS_S3_BUCKET");
+    }
 
     // 업로드 후 퍼블릭 URL 반환
     public String upload(BinaryContent binaryContent, byte[] bytes) {

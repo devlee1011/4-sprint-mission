@@ -29,17 +29,29 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     @Value("${discodeit.storage.local.root-path}")
     private String rootPath;
 
-    @Value("${discodeit.storage.s3.access-key}")
-    private String accessKey;
+//    @Value("${discodeit.storage.s3.access-key}")
+//    private String accessKey;
+//
+//    @Value("${discodeit.storage.s3.secret-key}")
+//    private String secretKey;
+//
+//    @Value("${discodeit.storage.s3.region}")
+//    private String region;
+//
+//    @Value("${discodeit.storage.s3.bucket}")
+//    private String bucket;
 
-    @Value("${discodeit.storage.s3.secret-key}")
-    private String secretKey;
+    private final String accessKey;
+    private final String secretKey;
+    private final String region;
+    private final String bucket;
 
-    @Value("${discodeit.storage.s3.region}")
-    private String region;
-
-    @Value("${discodeit.storage.s3.bucket}")
-    private String bucket;
+    public S3BinaryContentStorage() {
+        accessKey = System.getenv("AWS_ACCESS_KEY");
+        secretKey = System.getenv("AWS_SECRET_KEY");
+        region = System.getenv("AWS_REGION");
+        bucket = System.getenv("AWS_S3_BUCKET");
+    }
 
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
