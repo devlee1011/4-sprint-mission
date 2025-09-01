@@ -17,6 +17,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: 테스트 환경을 위한 환경변수 설정
+        run: |
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}" >> $GITHUB_ENV
+
       - name: Gradle Wrapper 실행 권한 부여
         run: chmod +x ./gradlew
 
@@ -27,3 +34,5 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          
+      
