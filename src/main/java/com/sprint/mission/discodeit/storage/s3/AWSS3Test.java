@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.storage.s3;
 
-import com.sprint.mission.discodeit.config.AwsProperties;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -24,13 +22,23 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class AWSS3Test {
-
-    private final AwsProperties props;
 
     @Value("${discodeit.storage.local.root-path}")
     private String rootPath;
+
+    @Value("${discodeit.storage.s3.access-key}")
+    private String accessKey;
+
+    @Value("${discodeit.storage.s3.secret-key}")
+    private String secretKey;
+
+    @Value("${discodeit.storage.s3.region}")
+    private String region;
+
+    @Value("${discodeit.storage.s3.bucket}")
+    private String bucket;
+
 
     // 업로드 후 퍼블릭 URL 반환
     public String upload(BinaryContent binaryContent, byte[] bytes) {
@@ -40,7 +48,7 @@ public class AWSS3Test {
 
             // 2) PutObjectRequest 생성 (버킷 정책이 퍼블릭 읽기면 acl 생략해도 됨)
             PutObjectRequest putReq = PutObjectRequest.builder()
-                    .bucket(props.getS3().getBucket())
+                    .bucket(bucket)
                     .key(key)
                     .contentType(binaryContent.getContentType())
                     // .acl(ObjectCannedACL.PUBLIC_READ) // 필요 시 주석 해제
@@ -52,7 +60,7 @@ public class AWSS3Test {
                     software.amazon.awssdk.core.sync.RequestBody.fromBytes(bytes));
 
             // 4) 퍼블릭 URL 생성 후 반환
-            return buildPublicUrl(props.getS3().getBucket(), props.getRegion(), key);
+            return buildPublicUrl(bucket, region, key);
 
         } catch (Exception e) {
             throw new RuntimeException("S3 업로드 실패", e);
@@ -60,7 +68,6 @@ public class AWSS3Test {
     }
 
     public ResponseEntity<Void> download(String filename) {
-        String bucket = props.getS3().getBucket();
         String key = rootPath + "/" + filename;
 
         GetObjectRequest getReq = GetObjectRequest.builder()
@@ -84,14 +91,10 @@ public class AWSS3Test {
      * 컨트롤러 등에서 key → 퍼블릭 URL 변환이 필요할 때 호출
      */
     public String toPublicUrl(String key) {
-        return buildPublicUrl(props.getS3().getBucket(), props.getRegion(), key);
+        return buildPublicUrl(bucket, region, key);
     }
 
     public S3Client getS3Client() {
-        String accessKey = props.getCredentials().getAccessKey();
-        String secretKey = props.getCredentials().getSecretKey();
-        String region = props.getRegion();
-
         // .env에서 키가 주입된 경우: 정적 자격 증명 사용
         if (accessKey != null && !accessKey.isBlank()) {
             return S3Client.builder()
@@ -114,10 +117,6 @@ public class AWSS3Test {
     }
 
     public S3Presigner getS3Presigner() {
-        String accessKey = props.getCredentials().getAccessKey();
-        String secretKey = props.getCredentials().getSecretKey();
-        String region = props.getRegion();
-
         return S3Presigner.builder()
                 .region(Region.of(region))
                 .credentialsProvider(
