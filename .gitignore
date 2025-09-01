@@ -44,6 +44,7 @@ bin/
 ### 숨김 파일 ###
 .*
 !.gitignore
+!.github
 
 ### 환경 변수 파일 ###
 .env
