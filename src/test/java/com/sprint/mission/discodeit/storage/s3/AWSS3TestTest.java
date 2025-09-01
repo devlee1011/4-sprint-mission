@@ -20,11 +20,9 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
-import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -45,15 +43,11 @@ class AWSS3TestTest {
         // rootPath 초기화
         rootPath = "test/";
 
-        // .env -> Properties 로드
-        Properties props = new Properties();
-        props.load(new FileInputStream(".env"));
-
-        // .env 파일에서 값 가져오기
-        accessKey = props.getProperty("AWS_S3_ACCESS_KEY");
-        secretKey = props.getProperty("AWS_S3_SECRET_KEY");
-        bucket = props.getProperty("AWS_S3_BUCKET");
-        region = Region.of(props.getProperty("AWS_REGION"));
+        // 시스템 환경변수에서 값 가져오기
+        accessKey = System.getenv("AWS_ACCESS_KEY");
+        secretKey = System.getenv("AWS_SECRET_KEY");
+        region = Region.of(System.getenv("AWS_REGION"));
+        bucket = System.getenv("AWS_S3_BUCKET");
 
         // 자격증명 생성
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
