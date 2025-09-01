@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.storage.s3;
 
-import com.sprint.mission.discodeit.config.AwsProperties;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
@@ -25,19 +23,38 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
-
-    private final AwsProperties props;
 
     @Value("${discodeit.storage.local.root-path}")
     private String rootPath;
 
+//    @Value("${discodeit.storage.s3.access-key}")
+//    private String accessKey;
+//
+//    @Value("${discodeit.storage.s3.secret-key}")
+//    private String secretKey;
+//
+//    @Value("${discodeit.storage.s3.region}")
+//    private String region;
+//
+//    @Value("${discodeit.storage.s3.bucket}")
+//    private String bucket;
+
+    private final String accessKey;
+    private final String secretKey;
+    private final String region;
+    private final String bucket;
+
+    public S3BinaryContentStorage() {
+        accessKey = System.getenv("AWS_ACCESS_KEY");
+        secretKey = System.getenv("AWS_SECRET_KEY");
+        region = System.getenv("AWS_REGION");
+        bucket = System.getenv("AWS_S3_BUCKET");
+    }
+
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
-        String bucket = props.getS3().getBucket();
-
         try {
             // 1) 키 생성 규칙: rootPath/id
             String key = makeS3ObjectKey(binaryContentId);
@@ -63,7 +80,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     @Override
     public InputStream get(UUID binaryContentId) {
-        String bucket = props.getS3().getBucket();
         String key = makeS3ObjectKey(binaryContentId);
 
         try {
@@ -84,7 +100,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     @Override
     public ResponseEntity<Void> download(BinaryContentDto metaData) {
-        String bucket = props.getS3().getBucket();
         String binaryContentId = metaData.id().toString();
         String key = rootPath + "/" + binaryContentId;
 
@@ -105,10 +120,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     public S3Client getS3Client() {
-        String accessKey = props.getCredentials().getAccessKey();
-        String secretKey = props.getCredentials().getSecretKey();
-        String region = props.getRegion();
-
         // .env에서 키가 주입된 경우: 정적 자격 증명 사용
         if (accessKey != null && !accessKey.isBlank()) {
             return S3Client.builder()
@@ -131,10 +142,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     public S3Presigner getS3Presigner() {
-        String accessKey = props.getCredentials().getAccessKey();
-        String secretKey = props.getCredentials().getSecretKey();
-        String region = props.getRegion();
-
         return S3Presigner.builder()
                 .region(Region.of(region))
                 .credentialsProvider(

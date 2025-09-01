@@ -55,6 +55,10 @@ tasks.named('test') {
 
 test {
     finalizedBy jacocoTestReport
+    environment "AWS_ACCESS_KEY", System.getenv("AWS_ACCESS_KEY")
+    environment "AWS_SECRET_KEY", System.getenv("AWS_SECRET_KEY")
+    environment "AWS_REGION", System.getenv("AWS_REGION")
+    environment "AWS_S3_BUCKET", System.getenv("AWS_S3_BUCKET")
 }
 
 jacocoTestReport {
