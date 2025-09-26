@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
+  private final PasswordEncoder passwordEncoder;
 
   @Transactional
   @Override
@@ -44,12 +46,7 @@ public class BasicUserService implements UserService {
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
 
-    if (userRepository.existsByEmail(email)) {
-      throw UserAlreadyExistsException.withEmail(email);
-    }
-    if (userRepository.existsByUsername(username)) {
-      throw UserAlreadyExistsException.withUsername(username);
-    }
+    verifyDuplicateEmailAndUsername(email, username);
 
     BinaryContent nullableProfile = optionalProfileCreateRequest
         .map(profileRequest -> {
@@ -63,7 +60,8 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
-    String password = userCreateRequest.password();
+
+    String password = passwordEncoder.encode(userCreateRequest.password());
 
     User user = new User(username, email, password, nullableProfile);
     Instant now = Instant.now();
@@ -112,13 +110,7 @@ public class BasicUserService implements UserService {
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
 
-    if (userRepository.existsByEmail(newEmail)) {
-      throw UserAlreadyExistsException.withEmail(newEmail);
-    }
-
-    if (userRepository.existsByUsername(newUsername)) {
-      throw UserAlreadyExistsException.withUsername(newUsername);
-    }
+    verifyDuplicateEmailAndUsername(newEmail, newUsername);
 
     BinaryContent nullableProfile = optionalProfileCreateRequest
         .map(profileRequest -> {
@@ -153,4 +145,15 @@ public class BasicUserService implements UserService {
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
   }
+
+  private void verifyDuplicateEmailAndUsername(String email, String username) {
+      if (userRepository.existsByEmail(email)) {
+          throw UserAlreadyExistsException.withEmail(email);
+      }
+
+      if (userRepository.existsByUsername(username)) {
+          throw UserAlreadyExistsException.withUsername(username);
+      }
+  }
+
 }
