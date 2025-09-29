@@ -48,3 +48,7 @@ bin/
 
 ### Github Actions ###
 !.github/
+
+### env 파일 ###
+.env
+*.env

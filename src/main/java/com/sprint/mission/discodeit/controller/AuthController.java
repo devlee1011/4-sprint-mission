@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController implements AuthApi {
+
+    private final AuthService authService;
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -31,6 +35,16 @@ public class AuthController implements AuthApi {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(userDetails.getUserDto());
+        UserDto userDto = userDetails.getUserDto();
+        log.debug("현재 세션 ID의 사용자 기본 정보: {}", userDto);
+        return ResponseEntity.ok(userDto);
+    }
+
+    @PutMapping("/role")
+    public ResponseEntity<UserDto> updateUserRole(@RequestBody UserRoleUpdateRequest request) {
+        log.info("사용자 권한 업데이트 요청: {}", request);
+        UserDto userDto = authService.updateUserRole(request);
+        log.debug("사용자 권한 업데이트 완료: {}", userDto);
+        return ResponseEntity.ok(userDto);
     }
 }

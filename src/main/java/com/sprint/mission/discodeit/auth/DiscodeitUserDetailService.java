@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.auth;
 
+import com.sprint.mission.discodeit.auth.utils.DiscodeitAuthorityUtils;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -17,12 +18,15 @@ import java.util.Optional;
 public class DiscodeitUserDetailService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final DiscodeitAuthorityUtils authorityUtils;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        User findUser = optionalUser.orElseThrow(() -> new UsernameNotFoundException(username));
-        UserDto userDto = userMapper.toDto(findUser);
-        return new DiscodeitUserDetails(userDto, findUser.getPassword());
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+        UserDto userDto = userMapper.toDto(user);
+        return new DiscodeitUserDetails(userDto, user.getPassword(), authorityUtils);
     }
+
+
 }

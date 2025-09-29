@@ -9,5 +9,6 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
   @Mapping(target = "online", expression = "java(user.getStatus().isOnline())")
+  @Mapping(target = "role", expression = "java(Role.from(user.getRole()))")
   UserDto toDto(User user);
 }
