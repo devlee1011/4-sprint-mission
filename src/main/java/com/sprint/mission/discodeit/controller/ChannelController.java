@@ -12,6 +12,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,6 +33,7 @@ public class ChannelController implements ChannelApi {
   private final ChannelService channelService;
 
   @PostMapping(path = "public")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public ResponseEntity<ChannelDto> create(@RequestBody @Valid PublicChannelCreateRequest request) {
     log.info("공개 채널 생성 요청: {}", request);
     ChannelDto createdChannel = channelService.create(request);
@@ -52,6 +54,7 @@ public class ChannelController implements ChannelApi {
   }
 
   @PatchMapping(path = "{channelId}")
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public ResponseEntity<ChannelDto> update(
       @PathVariable("channelId") UUID channelId,
       @RequestBody @Valid PublicChannelUpdateRequest request) {
