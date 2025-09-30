@@ -21,4 +21,6 @@ public interface UserService {
       Optional<BinaryContentCreateRequest> profileCreateRequest);
 
   void delete(UUID userId);
+
+  void createAdminUserIfNotExists(String username, String email, String password);
 }

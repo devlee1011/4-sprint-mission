@@ -35,14 +35,15 @@ public class User extends BaseUpdatableEntity {
     private UserStatus status;
 
     @Column(nullable = false, length = 20)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public User(String username, String email, String password, BinaryContent profile, Role role) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.profile = profile;
-        this.role = role.name();
+        this.role = role;
     }
 
     public void update(String newUsername, String newEmail, String newPassword,
@@ -63,7 +64,7 @@ public class User extends BaseUpdatableEntity {
 
     public void updateRole(Role newRole) {
         if (newRole != null) {
-            this.role = newRole.toString();
+            this.role = newRole;
         }
     }
 }

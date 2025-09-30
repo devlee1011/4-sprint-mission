@@ -16,15 +16,16 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -145,6 +146,28 @@ public class BasicUserService implements UserService {
 
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
+  }
+
+  @Transactional
+  @Override
+  public void createAdminUserIfNotExists(String username, String email, String password) {
+      if (userRepository.existsByUsername(username)) {
+          return;
+      }
+
+      log.debug("관리자 계정 생성 시작");
+      User admin = new User(
+              username,
+              email,
+              password,
+              null,
+              Role.ADMIN
+      );
+      Instant now = Instant.now();
+      UserStatus userStatus = new UserStatus(admin, now);
+
+      userRepository.save(admin);
+      log.debug("관리자 계정 생성 완료: userId={}", admin.getId());
   }
 
   private void verifyDuplicateEmailAndUsername(String email, String username) {
