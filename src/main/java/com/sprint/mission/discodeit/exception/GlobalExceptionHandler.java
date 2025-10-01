@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -59,6 +61,24 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
         .body(response);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException exception) {
+    log.error("액세스 요청 실패: {}", exception.getMessage());
+    ErrorResponse response = new ErrorResponse(exception, HttpStatus.FORBIDDEN.value());
+    return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(response);
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException exception) {
+    log.error("인증 실패: {}", exception.getMessage());
+    ErrorResponse response = new ErrorResponse(exception, HttpStatus.UNAUTHORIZED.value());
+    return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(response);
   }
 
   private HttpStatus determineHttpStatus(DiscodeitException exception) {

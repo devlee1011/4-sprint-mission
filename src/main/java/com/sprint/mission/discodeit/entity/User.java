@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -43,13 +44,13 @@ public class User extends BaseUpdatableEntity {
 
     public void update(String newUsername, String newEmail, String newPassword,
                        BinaryContent newProfile) {
-        if (newUsername != null && !newUsername.equals(this.username)) {
+        if (!StringUtils.isBlank(newUsername) && !newUsername.equals(this.username)) {
             this.username = newUsername;
         }
-        if (newEmail != null && !newEmail.equals(this.email)) {
+        if (!StringUtils.isBlank(newEmail) && !newEmail.equals(this.email)) {
             this.email = newEmail;
         }
-        if (newPassword != null && !newPassword.equals(this.password)) {
+        if (!StringUtils.isBlank(newPassword) && !newPassword.equals(this.password)) {
             this.password = newPassword;
         }
         if (newProfile != null) {

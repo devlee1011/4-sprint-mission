@@ -26,7 +26,7 @@ public class DiscodeitUserDetailService implements UserDetailsService {
     private final DiscodeitAuthorityUtils authorityUtils;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public DiscodeitUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
         UserDto userDto = userMapper.toDto(user, false); // 로딩중이므로 online 초기값: false

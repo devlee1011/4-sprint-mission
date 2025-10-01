@@ -28,10 +28,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType("application/json;charset=UTF-8");
 
         String username = authentication.getName();
-        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) discodeitUserDetailService.loadUserByUsername(username);
+        DiscodeitUserDetails userDetails = discodeitUserDetailService.loadUserByUsername(username);
         UserDto userDto = userDetails.getUserDto();
 
         String responseBody = objectMapper.writeValueAsString(userDto);
         response.getWriter().write(responseBody);
+        response.getWriter().flush();
     }
 }

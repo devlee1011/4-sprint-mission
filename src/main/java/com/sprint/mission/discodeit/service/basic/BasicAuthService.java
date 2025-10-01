@@ -67,7 +67,7 @@ public class BasicAuthService implements AuthService {
     }
 
     private void expireUserSession(String username) {
-        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailService.loadUserByUsername(username);
+        DiscodeitUserDetails userDetails = userDetailService.loadUserByUsername(username);
         List<SessionInformation> sessions = sessionRegistry.getAllSessions(userDetails, false);
         for (SessionInformation session : sessions) {
             session.expireNow();
