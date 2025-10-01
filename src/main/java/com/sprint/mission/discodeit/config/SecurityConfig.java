@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetailService;
 import com.sprint.mission.discodeit.auth.LoginFailureHandler;
 import com.sprint.mission.discodeit.auth.LoginSuccessHandler;
 import com.sprint.mission.discodeit.auth.SpaCsrfTokenRequestHandler;
@@ -32,7 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginSuccessHandler loginSuccessHandler,
-                                           LoginFailureHandler loginFailureHandler) throws Exception {
+                                           LoginFailureHandler loginFailureHandler, DiscodeitUserDetailService discodeitUserDetailService) throws Exception {
         http
                 .sessionManagement(management -> management
                         .sessionConcurrency(concurrency -> concurrency
@@ -81,7 +82,12 @@ public class SecurityConfig {
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                        }));
+                        }))
+                .rememberMe(remember -> remember
+                        .key("remember-me-key") // 쿠키 생성 시 사용되는 고정 키
+                        .tokenValiditySeconds(7 * 24 * 60 * 60) // 쿠키 만료 시간 (7일)
+                        .rememberMeParameter("remember-me") // 로그인 폼 파라미터명
+                        .userDetailsService(discodeitUserDetailService));
         return http.build();
     }
 
