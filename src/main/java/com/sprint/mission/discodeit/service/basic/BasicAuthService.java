@@ -30,7 +30,7 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final SessionRegistry sessionRegistry;
-    private final DiscodeitUserDetailService discodeitUserDetailService;
+    private final DiscodeitUserDetailService userDetailService;
 
     @Transactional
     @Override
@@ -45,12 +45,29 @@ public class BasicAuthService implements AuthService {
 
         user.updateRole(newRole);
         expireUserSession(user.getUsername());
+        boolean online = isLoggedInByUserId(userId);
         log.info("사용자 권한 수정 완료: userId={}", userId);
-        return userMapper.toDto(user);
+        return userMapper.toDto(user, online);
+    }
+
+    @Override
+    public boolean isLoggedInByUserId(UUID userId) {
+        User user = getUserByUserId(userId);
+        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailService.loadUserByUsername(user.getUsername());
+
+        List<SessionInformation> sessions =
+                sessionRegistry.getAllSessions(userDetails, false);
+
+        return sessions.stream().anyMatch(s -> !s.isExpired());
+    }
+
+    private User getUserByUserId(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
     }
 
     private void expireUserSession(String username) {
-        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) discodeitUserDetailService.loadUserByUsername(username);
+        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailService.loadUserByUsername(username);
         List<SessionInformation> sessions = sessionRegistry.getAllSessions(userDetails, false);
         for (SessionInformation session : sessions) {
             session.expireNow();

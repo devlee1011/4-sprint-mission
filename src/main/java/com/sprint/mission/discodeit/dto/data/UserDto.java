@@ -12,5 +12,4 @@ public record UserDto(
     Boolean online,
     Role role
 ) {
-
 }

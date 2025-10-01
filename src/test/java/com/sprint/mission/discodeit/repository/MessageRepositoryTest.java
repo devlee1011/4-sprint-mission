@@ -1,18 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.sprint.mission.discodeit.entity.*;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +13,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * MessageRepository 슬라이스 테스트
@@ -51,9 +47,7 @@ class MessageRepositoryTest {
    */
   private User createTestUser(String username, String email) {
     BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
-    User user = new User(username, email, "password123!@#", profile);
-    // UserStatus 생성 및 연결
-    UserStatus status = new UserStatus(user, Instant.now());
+    User user = new User(username, email, "password123!@#", profile, Role.USER);
     return userRepository.save(user);
   }
 
@@ -123,7 +117,7 @@ class MessageRepositoryTest {
     // 저자 정보가 함께 로드되었는지 확인 (FETCH JOIN)
     Message firstMessage = content.get(0);
     assertThat(Hibernate.isInitialized(firstMessage.getAuthor())).isTrue();
-    assertThat(Hibernate.isInitialized(firstMessage.getAuthor().getStatus())).isTrue();
+//    assertThat(Hibernate.isInitialized(firstMessage.getAuthor().getStatus())).isTrue();
     assertThat(Hibernate.isInitialized(firstMessage.getAuthor().getProfile())).isTrue();
   }
 
