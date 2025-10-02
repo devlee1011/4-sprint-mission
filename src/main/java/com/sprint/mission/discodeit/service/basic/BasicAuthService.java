@@ -52,7 +52,7 @@ public class BasicAuthService implements AuthService {
     @Override
     public boolean isLoggedInByUserId(UUID userId) {
         User user = getUserByUserId(userId);
-        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailService.loadUserByUsername(user.getUsername());
+        DiscodeitUserDetails userDetails = userDetailService.loadUserByUsername(user.getUsername());
 
         List<SessionInformation> sessions =
                 sessionRegistry.getAllSessions(userDetails, false);

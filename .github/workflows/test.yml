@@ -3,7 +3,7 @@ name: 테스트
 on:
   pull_request:
     branches:
-      - main
+      - dev
 
 jobs:
   build:
