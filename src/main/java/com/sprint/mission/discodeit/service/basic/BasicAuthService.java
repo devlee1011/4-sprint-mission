@@ -34,7 +34,6 @@ public class BasicAuthService implements AuthService {
 
     @Transactional
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     public UserDto updateUserRole(UserRoleUpdateRequest userRoleUpdateRequest) {
         log.debug("사용자 권한 수정 시작: request={}", userRoleUpdateRequest);
         UUID userId = userRoleUpdateRequest.userId();

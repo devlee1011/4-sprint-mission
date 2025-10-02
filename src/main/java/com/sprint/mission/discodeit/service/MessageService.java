@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 
 public interface MessageService {
 
@@ -22,4 +23,6 @@ public interface MessageService {
   MessageDto update(UUID messageId, MessageUpdateRequest request);
 
   void delete(UUID messageId);
+
+  boolean isAuthor(UUID messageId, Authentication authentication);
 }
