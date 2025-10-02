@@ -268,4 +268,4 @@ class ChannelControllerTest {
         .andExpect(jsonPath("$[1].id").value(channelId2.toString()))
         .andExpect(jsonPath("$[1].type").value("PRIVATE"));
   }
-} 
+}

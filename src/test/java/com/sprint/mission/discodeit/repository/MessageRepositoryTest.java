@@ -212,4 +212,4 @@ class MessageRepositoryTest {
     ).getContent();
     assertThat(otherChannelMessages).hasSize(1);
   }
-} 
+}

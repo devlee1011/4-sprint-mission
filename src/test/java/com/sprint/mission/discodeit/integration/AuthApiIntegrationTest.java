@@ -11,4 +11,4 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class AuthApiIntegrationTest {
 
-} 
+}

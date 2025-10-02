@@ -144,4 +144,4 @@ class S3BinaryContentStorageTest {
     assertThat(location).contains(bucket);
     assertThat(location).contains(testId.toString());
   }
-} 
+}
