@@ -190,4 +190,4 @@ class ReadStatusRepositoryTest {
     List<ReadStatus> otherChannelReadStatuses = readStatusRepository.findAllByChannelIdWithUser(otherChannel.getId());
     assertThat(otherChannelReadStatuses).hasSize(1);
   }
-} 
+}

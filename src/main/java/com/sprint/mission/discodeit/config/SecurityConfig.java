@@ -41,10 +41,9 @@ public class SecurityConfig {
                                 .maximumSessions(1)
                                 .maxSessionsPreventsLogin(false)
                                 .sessionRegistry(sessionRegistry())))
-                .csrf(AbstractHttpConfigurer::disable)
-//                .csrf(csrf -> csrf
-//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-//                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
@@ -62,7 +61,7 @@ public class SecurityConfig {
                                 "/static/**",
                                 "/assets/**"
                         ).permitAll()
-                        
+
                         // 인증 불필요 API
                         .requestMatchers(
                                 "/api/auth/csrf-token",
@@ -72,14 +71,14 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/actuator/**"
                         ).permitAll()
-                        
+
                         // 회원가입 API
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        
+
                         // 나머지 요청은 인증 필요
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) ->{
+                        .authenticationEntryPoint((request, response, authException) -> {
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
@@ -123,4 +122,3 @@ public class SecurityConfig {
         return new HttpSessionEventPublisher();
     }
 }
-

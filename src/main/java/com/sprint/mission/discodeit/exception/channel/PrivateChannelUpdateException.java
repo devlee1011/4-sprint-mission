@@ -14,4 +14,4 @@ public class PrivateChannelUpdateException extends ChannelException {
         exception.addDetail("channelId", channelId);
         return exception;
     }
-} 
+}

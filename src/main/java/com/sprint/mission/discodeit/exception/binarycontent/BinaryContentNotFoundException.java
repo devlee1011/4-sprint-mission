@@ -14,4 +14,4 @@ public class BinaryContentNotFoundException extends BinaryContentException {
         exception.addDetail("binaryContentId", binaryContentId);
         return exception;
     }
-} 
+}

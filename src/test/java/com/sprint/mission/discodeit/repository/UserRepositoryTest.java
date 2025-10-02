@@ -133,4 +133,4 @@ class UserRepositoryTest {
     assertThat(Hibernate.isInitialized(foundUser2.getProfile())).isTrue();
 //    assertThat(Hibernate.isInitialized(foundUser2.getStatus())).isTrue();
   }
-} 
+}

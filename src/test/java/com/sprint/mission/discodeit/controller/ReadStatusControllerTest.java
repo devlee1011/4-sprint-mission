@@ -167,4 +167,4 @@ class ReadStatusControllerTest {
         .andExpect(jsonPath("$[1].userId").value(userId.toString()))
         .andExpect(jsonPath("$[1].channelId").value(channelId2.toString()));
   }
-} 
+}

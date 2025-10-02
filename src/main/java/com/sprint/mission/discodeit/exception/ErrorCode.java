@@ -32,4 +32,4 @@ public enum ErrorCode {
     ErrorCode(String message) {
         this.message = message;
     }
-} 
+}

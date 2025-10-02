@@ -148,4 +148,4 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         )
         .build();
   }
-} 
+}

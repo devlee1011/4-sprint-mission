@@ -14,4 +14,4 @@ public class MessageNotFoundException extends MessageException {
         exception.addDetail("messageId", messageId);
         return exception;
     }
-} 
+}

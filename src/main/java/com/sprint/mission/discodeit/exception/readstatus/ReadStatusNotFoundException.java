@@ -14,4 +14,4 @@ public class ReadStatusNotFoundException extends ReadStatusException {
         exception.addDetail("readStatusId", readStatusId);
         return exception;
     }
-} 
+}

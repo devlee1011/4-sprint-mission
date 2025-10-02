@@ -358,4 +358,4 @@ class BasicMessageServiceTest {
     assertThatThrownBy(() -> messageService.delete(messageId))
         .isInstanceOf(MessageNotFoundException.class);
   }
-} 
+}

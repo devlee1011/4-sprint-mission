@@ -18,4 +18,4 @@ public class UserAlreadyExistsException extends UserException {
         exception.addDetail("username", username);
         return exception;
     }
-} 
+}

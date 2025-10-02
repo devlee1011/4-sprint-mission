@@ -20,4 +20,4 @@ public class UserNotFoundException extends UserException {
         exception.addDetail("username", username);
         return exception;
     }
-} 
+}

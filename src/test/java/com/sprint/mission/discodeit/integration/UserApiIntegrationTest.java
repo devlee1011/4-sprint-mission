@@ -245,4 +245,4 @@ class UserApiIntegrationTest {
     mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId))
         .andExpect(status().isNotFound());
   }
-} 
+}
