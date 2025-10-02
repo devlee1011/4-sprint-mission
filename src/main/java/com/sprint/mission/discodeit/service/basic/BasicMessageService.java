@@ -139,8 +139,8 @@ public class BasicMessageService implements MessageService {
   @Override
   public boolean isAuthor(UUID messageId, Authentication authentication) {
     UUID currentUserId = ((DiscodeitUserDetails) authentication.getPrincipal()).getId();
-    return messageRepository.findById(messageId)
-            .map(message -> message.getAuthor().getId().equals(currentUserId))
-            .orElse(false);
+    Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> MessageNotFoundException.withId(messageId));
+    return message.getAuthor().getId().equals(currentUserId);
   }
 }
