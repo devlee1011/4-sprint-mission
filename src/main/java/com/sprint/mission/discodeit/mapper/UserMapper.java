@@ -7,5 +7,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
 public interface UserMapper {
 
-  UserDto toDto(User user, boolean online);
+    UserDto toDto(User user, boolean online);
 }
