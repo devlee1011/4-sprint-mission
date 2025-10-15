@@ -47,7 +47,7 @@ public class JwtTokenProvider {
             Date expiration = new Date(System.currentTimeMillis() + expirationMinutes * 60 * 1000);
             JWTClaimsSet claimSet = new JWTClaimsSet.Builder()
                     .subject(subject)
-                    .claim("roles", claims.get("roles"))
+                    .claim("role", claims.get("role"))
                     .expirationTime(expiration)
                     .issueTime(new Date())
                     .issuer("discodeit")

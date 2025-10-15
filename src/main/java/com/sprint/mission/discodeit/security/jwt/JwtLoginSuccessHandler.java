@@ -38,11 +38,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
             // 클레임 생성
             Map<String, Object> claims = new HashMap<>();
-            claims.put("roles", userDetails.getAuthorities());
+            claims.put("role", userDetails.getAuthorities());
 
             // 토큰 발급
-            String accessToken = jwtTokenProvider.generateAccessToken(claims, userDto.email());
-            String refreshToken = jwtTokenProvider.generateRefreshToken(userDto.email());
+            String accessToken = jwtTokenProvider.generateAccessToken(claims, userDto.username());
+            String refreshToken = jwtTokenProvider.generateRefreshToken(userDto.username());
 
             // 리프레시 토큰 쿠키 저장
             Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
