@@ -135,4 +135,5 @@ public class SecurityConfig {
   public HttpSessionEventPublisher httpSessionEventPublisher() {
     return new HttpSessionEventPublisher();
   }
+
 }
