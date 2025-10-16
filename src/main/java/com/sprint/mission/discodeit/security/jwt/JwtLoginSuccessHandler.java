@@ -10,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -29,6 +31,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
+        log.debug("인증 성공, 토큰 생성 시작");
         response.setCharacterEncoding("UTF-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -43,16 +46,17 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
             // 토큰 발급
             String accessToken = jwtTokenProvider.generateAccessToken(claims, userDto.username());
             String refreshToken = jwtTokenProvider.generateRefreshToken(userDto.username());
+            log.debug("accessToken: {}", accessToken);
+            log.debug("refreshToken: {}", refreshToken);
 
+            log.debug("Authorization Header 추가");
             response.setHeader("Authorization", "Bearer " + accessToken);
-            System.out.println(response.getHeader("Authorization"));
 
             // 리프레시 토큰 쿠키 저장
             Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
-            response.getWriter().write(objectMapper.writeValueAsString(userDto));
             refreshCookie.setHttpOnly(true);
             refreshCookie.setSecure(true);
-            refreshCookie.setMaxAge(jwtTokenProvider.getRefreshTokenExpirationMinutes());
+            refreshCookie.setMaxAge(jwtTokenProvider.getRefreshTokenExpirationMinutes() * 60);
             response.addCookie(refreshCookie);
 
             // 응답

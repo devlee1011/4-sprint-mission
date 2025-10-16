@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -25,11 +27,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        log.debug("JWT 토큰 검증 필터 시작");
         try {
             Map<String, Object> claims = verifyJws(request);
             setAuthenticationToContext(claims);
         } catch (Exception e) {
             request.setAttribute("exception", e);
+            log.error("JWT 토큰 검증 중 알 수 없는 에러 발생: {}", e.getMessage(), e);
         }
         filterChain.doFilter(request, response);
     }
@@ -37,16 +41,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String authorization = request.getHeader("Authorization");
-        System.out.println("Authorization Header: " + authorization); // 디버깅용
+        log.debug("Authorization: {}", authorization);
         return authorization == null || !authorization.startsWith("Bearer");
     }
 
     private Map<String, Object> verifyJws(HttpServletRequest request) {
         String jws = request.getHeader("Authorization").replace("Bearer ", "");
+        log.debug("JWS: {}", jws);
         return jwtTokenProvider.getClaims(jws);
     }
 
         private void setAuthenticationToContext(Map<String, Object> claims) {
+            log.debug("Spring Context에 Authentication 추가");
             String username = claims.get("sub").toString(); // sub에 username 담김
             List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + claims.get("role").toString()));
             Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
