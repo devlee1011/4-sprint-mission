@@ -27,10 +27,10 @@ public class JwtLogoutHandler implements LogoutHandler {
         if (optionalRefreshCookie.isEmpty()) throw new RuntimeException("refresh cookie is empty");
         Cookie refreshCookie = optionalRefreshCookie.get();
 
-        refreshCookie.setMaxAge(0);
-        refreshCookie.setPath("/");
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
-        response.addCookie(refreshCookie);
+        Cookie deleteCookie = new Cookie("REFRESH_TOKEN", refreshCookie.getValue());
+        deleteCookie.setMaxAge(0);
+        deleteCookie.setHttpOnly(true);
+        deleteCookie.setSecure(true);
+        response.addCookie(deleteCookie);
     }
 }
