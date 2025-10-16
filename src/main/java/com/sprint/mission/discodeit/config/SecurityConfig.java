@@ -84,7 +84,6 @@ public class SecurityConfig {
         .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .rememberMe(Customizer.withDefaults())
     ;
     return http.build();
   }

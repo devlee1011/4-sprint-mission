@@ -1,21 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
-import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.TokenPair;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.service.UserService;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,9 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
-    private final UserService userService;
     //
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -45,16 +37,6 @@ public class AuthController implements AuthApi {
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .build();
-    }
-
-    @GetMapping("me")
-    public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-        log.info("내 정보 조회 요청");
-        UUID userId = userDetails.getUserDto().id();
-        UserDto userDto = userService.find(userId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(userDto);
     }
 
     @PutMapping("role")
