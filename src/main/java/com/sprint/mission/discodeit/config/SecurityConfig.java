@@ -21,7 +21,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -48,7 +47,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
-            AuthenticationManager authenticationManager,
             JwtTokenProvider jwtTokenProvider,
             JwtLoginSuccessHandler jwtLoginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
@@ -57,17 +55,18 @@ public class SecurityConfig {
     )
             throws Exception {
 
-        JwtAuthenticationFilter jwtAuthenticationFilter = setJwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtLoginSuccessHandler, loginFailureHandler);
-        JwtVerificationFilter jwtVerificationFilter = new JwtVerificationFilter(jwtTokenProvider);
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
 
         http
-//                .csrf(csrf -> csrf
-//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-//                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-//                )
-                .csrf(AbstractHttpConfigurer::disable)
-                .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtVerificationFilter, UsernamePasswordAuthenticationFilter.class)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                )
+                .formLogin(login -> login
+                        .loginProcessingUrl("/api/auth/login")
+                        .successHandler(jwtLoginSuccessHandler)
+                        .failureHandler(loginFailureHandler))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .addLogoutHandler(jwtLogoutHandler)
@@ -145,18 +144,5 @@ public class SecurityConfig {
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
-    }
-
-    private JwtAuthenticationFilter setJwtAuthenticationFilter(
-            AuthenticationManager authenticationManager,
-            JwtTokenProvider jwtTokenProvider,
-            JwtLoginSuccessHandler jwtLoginSuccessHandler,
-            LoginFailureHandler loginFailureHandler
-    ) {
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider);
-        jwtAuthenticationFilter.setFilterProcessesUrl("/api/auth/login");
-        jwtAuthenticationFilter.setAuthenticationSuccessHandler(jwtLoginSuccessHandler);
-        jwtAuthenticationFilter.setAuthenticationFailureHandler(loginFailureHandler);
-        return jwtAuthenticationFilter;
     }
 }

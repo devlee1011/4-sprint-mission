@@ -4,42 +4,52 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.SneakyThrows;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {  // (1)
-    private final AuthenticationManager authenticationManager;
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final JwtTokenProvider jwtTokenProvider;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
-        this.authenticationManager = authenticationManager;
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    @SneakyThrows
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(username, password);
-
-        return authenticationManager.authenticate(authenticationToken);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            Map<String, Object> claims = verifyJws(request);
+            setAuthenticationToContext(claims);
+        } catch (Exception e) {
+            request.setAttribute("exception", e);
+        }
+        filterChain.doFilter(request, response);
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request,
-                                            HttpServletResponse response,
-                                            FilterChain chain,
-                                            Authentication authResult) throws ServletException, IOException {
-
-        this.getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+        System.out.println("Authorization Header: " + authorization); // 디버깅용
+        return authorization == null || !authorization.startsWith("Bearer");
     }
-}
+
+    private Map<String, Object> verifyJws(HttpServletRequest request) {
+        String jws = request.getHeader("Authorization").replace("Bearer ", "");
+        return jwtTokenProvider.getClaims(jws);
+    }
+
+        private void setAuthenticationToContext(Map<String, Object> claims) {
+            String username = claims.get("sub").toString(); // sub에 username 담김
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + claims.get("role").toString()));
+            Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+    }
