@@ -31,6 +31,7 @@ public class JwtLogoutHandler implements LogoutHandler {
         deleteCookie.setMaxAge(0);
         deleteCookie.setHttpOnly(true);
         deleteCookie.setSecure(true);
+        deleteCookie.setPath("/");
         response.addCookie(deleteCookie);
     }
 }
