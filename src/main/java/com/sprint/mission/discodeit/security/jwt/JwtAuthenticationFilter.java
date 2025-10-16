@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.security.jwt;
 
+import com.sprint.mission.discodeit.entity.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,9 +53,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
         private void setAuthenticationToContext(Map<String, Object> claims) {
-            log.debug("Spring Context에 Authentication 추가");
+            log.debug("Spring Context에 Authentication 추가 - claims: {}", claims);
             String username = claims.get("sub").toString(); // sub에 username 담김
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + claims.get("role").toString()));
+            String roleName =  "ROLE_" + claims.get("role");
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleName));
             Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

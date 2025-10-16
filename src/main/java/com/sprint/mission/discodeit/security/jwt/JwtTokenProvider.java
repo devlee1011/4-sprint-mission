@@ -8,16 +8,18 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
     @Getter
@@ -44,6 +46,7 @@ public class JwtTokenProvider {
 
     public String generateToken(Map<String, Object> claims, String subject, int expirationMinutes) {
         try {
+            log.debug("JWT Token 생성 시작 - claims: {}, subject: {}", claims, subject);
             JWSSigner signer = new MACSigner(secretKey.getBytes(StandardCharsets.UTF_8));
             Date expiration = new Date(System.currentTimeMillis() + expirationMinutes * 60 * 1000);
             JWTClaimsSet claimSet = new JWTClaimsSet.Builder()
@@ -66,6 +69,7 @@ public class JwtTokenProvider {
 
     public Map<String, Object> getClaims(String token) {
         try {
+            log.debug("Claims 조회 시작 - token: {}", token);
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
 
@@ -80,8 +84,10 @@ public class JwtTokenProvider {
         }
     }
 
-    public String refreshAccessToken(String refreshToken) {
+    public String refreshAccessToken(String refreshToken, String roleName) {
         try {
+            log.debug("Access Token 갱신 시작 - refreshToken: {}", refreshToken);
+            // Refresh Token 검증
             SignedJWT signedJWT = SignedJWT.parse(refreshToken);
             JWSVerifier verifier = new MACVerifier(secretKey.getBytes(StandardCharsets.UTF_8));
 
@@ -98,9 +104,9 @@ public class JwtTokenProvider {
 
             String subject = claimsSet.getSubject();
             Map<String, Object> newClaims = new HashMap<>();
-            newClaims.put("roles", claimsSet.getClaim("roles"));
+            newClaims.put("role", roleName);
 
-            return generateToken(newClaims, subject, refreshTokenExpirationMinutes);
+            return generateToken(newClaims, subject, accessTokenExpirationMinutes);
         } catch (Exception e) {
             throw new RuntimeException("Access Token 갱신 실패");
         }

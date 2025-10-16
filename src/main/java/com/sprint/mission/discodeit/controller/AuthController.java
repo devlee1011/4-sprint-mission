@@ -53,33 +53,36 @@ public class AuthController implements AuthApi {
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         log.info("Refresh Token으로 Access Token 재발급 요청");
         try {
-          Cookie[] cookies = request.getCookies();
-          if (cookies == null) throw new RuntimeException("No Cookies found in request");
+            Cookie[] cookies = request.getCookies();
+            if (cookies == null) throw new RuntimeException("No Cookies found in request");
 
-          Optional<Cookie> refreshCookie = Arrays.stream(cookies)
-                  .filter(c -> "REFRESH_TOKEN".equals(c.getName()))
-                  .findFirst();
+            Optional<Cookie> refreshCookie = Arrays.stream(cookies)
+                    .filter(c -> "REFRESH_TOKEN".equals(c.getName()))
+                    .findFirst();
 
-          if (refreshCookie.isEmpty()) {
-            throw new RuntimeException("Refresh Token이 쿠키에 존재하지 않음");
-          }
-          String refreshToken = refreshCookie.get().getValue();
-          TokenPair tokenPair = authService.refreshTokens(refreshToken);
+            if (refreshCookie.isEmpty()) {
+                throw new RuntimeException("Refresh Token이 쿠키에 존재하지 않음");
+            }
 
-          // Refresh Token Rotation
-          Cookie newCookie = new Cookie("REFRESH_TOKEN", tokenPair.refreshToken());
-          newCookie.setHttpOnly(true);
-          newCookie.setSecure(true);
-          newCookie.setPath("/");
-          newCookie.setMaxAge(jwtTokenProvider.getRefreshTokenExpirationMinutes() * 60);
-          response.addCookie(newCookie);
+            String refreshToken = refreshCookie.get().getValue();
+            TokenPair tokenPair = authService.refreshTokens(refreshToken);
 
-          return ResponseEntity.ok(tokenPair.jwtDto());
+            // Refresh Token Rotation
+            Cookie newRefreshToken = new Cookie("REFRESH_TOKEN", tokenPair.refreshToken());
+            newRefreshToken.setHttpOnly(true);
+            newRefreshToken.setSecure(true);
+            newRefreshToken.setPath("/");
+            newRefreshToken.setMaxAge(jwtTokenProvider.getRefreshTokenExpirationMinutes() * 60);
+            response.addCookie(newRefreshToken);
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(tokenPair.jwtDto());
 
         } catch (RuntimeException e) {
-          log.error("토큰 재발급 실패", e);
-          return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                  .body(new ErrorResponse(e, HttpStatus.UNAUTHORIZED.value()));
+            log.error("토큰 재발급 실패", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse(e, HttpStatus.UNAUTHORIZED.value()));
         }
     }
 }

@@ -60,17 +60,17 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public TokenPair refreshTokens(String refreshToken) {
-      Map<String, Object> claims = jwtTokenProvider.getClaims(refreshToken);
-      String username = (String) claims.get("sub");
+        Map<String, Object> claims = jwtTokenProvider.getClaims(refreshToken);
+        String username = (String) claims.get("sub");
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+        UserDto userDto = userMapper.toDto(user);
+        String roleName = userDto.role().name();
 
-      String newAccessToken = jwtTokenProvider.refreshAccessToken(refreshToken);
-      String newRefreshToken = jwtTokenProvider.generateRefreshToken(username);
+        String newAccessToken = jwtTokenProvider.refreshAccessToken(refreshToken, roleName);
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(username);
 
-      User user = userRepository.findByUsername(username)
-              .orElseThrow(() -> new UsernameNotFoundException(username));
-      UserDto userDto = userMapper.toDto(user);
-
-      JwtDto jwtDto = new JwtDto(userDto, newAccessToken);
-      return new TokenPair(jwtDto, newRefreshToken);
+        JwtDto jwtDto = new JwtDto(userDto, newAccessToken);
+        return new TokenPair(jwtDto, newRefreshToken);
     }
 }
