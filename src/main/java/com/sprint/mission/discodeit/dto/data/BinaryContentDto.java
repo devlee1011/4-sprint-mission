@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.data;
 
-import com.sprint.mission.discodeit.entity.Status;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ public record BinaryContentDto(
     String fileName,
     Long size,
     String contentType,
-    Status status
+    BinaryContentStatus binaryContentStatus
 ) {
 
 }
