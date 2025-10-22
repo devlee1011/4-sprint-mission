@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Status;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -74,10 +75,24 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Override
   public void delete(UUID binaryContentId) {
     log.debug("바이너리 컨텐츠 삭제 시작: id={}", binaryContentId);
-    if (!binaryContentRepository.existsById(binaryContentId)) {
-      throw BinaryContentNotFoundException.withId(binaryContentId);
-    }
+    checkBinaryContentIsExist(binaryContentId);
     binaryContentRepository.deleteById(binaryContentId);
     log.info("바이너리 컨텐츠 삭제 완료: id={}", binaryContentId);
+  }
+
+  @Transactional
+  @Override
+  public void updateStatus(UUID binaryContentId, Status newStatus) {
+      log.debug("바이너리 컨텐츠 상태 업데이트 시작: id={}", binaryContentId);
+      BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+              .orElseThrow(() -> BinaryContentNotFoundException.withId(binaryContentId));
+      binaryContent.update(newStatus);
+      log.info("바이너리 컨텐츠 상태 업데이트 완료: id={}, newStatus={}", binaryContentId, newStatus.name());
+  }
+
+  private void checkBinaryContentIsExist(UUID binaryContentId) {
+      if (!binaryContentRepository.existsById(binaryContentId)) {
+        throw BinaryContentNotFoundException.withId(binaryContentId);
+      }
   }
 }

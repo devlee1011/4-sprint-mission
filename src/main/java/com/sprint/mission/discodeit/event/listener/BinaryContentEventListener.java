@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.event.listener;
 
+import com.sprint.mission.discodeit.entity.Status;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import java.util.UUID;
 public class BinaryContentEventListener {
 
     private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentService binaryContentService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleBinaryContentCreated(BinaryContentCreatedEvent event) {
@@ -27,10 +30,22 @@ public class BinaryContentEventListener {
                 binaryContentId,
                 size
         );
-        binaryContentStorage.put(binaryContentId, bytes);
-        log.debug("바이너리 데이터 저장 완료: id={}, size={}",
-                binaryContentId,
-                size
-        );
+        try {
+            binaryContentService.updateStatus(binaryContentId, Status.PROCESSING);
+            binaryContentStorage.put(binaryContentId, bytes);
+            binaryContentService.updateStatus(binaryContentId, Status.SUCCESS);
+            log.info("바이너리 데이터 저장 성공: id={}, size={}",
+                    binaryContentId,
+                    size
+            );
+        } catch (Exception e) {
+            binaryContentService.updateStatus(binaryContentId, Status.FAIL);
+            log.error("바이너리 데이터 저장 실패: id={}, size={}, error={}",
+                    binaryContentId,
+                    size,
+                    e.getMessage(),
+                    e
+            );
+        }
     }
 }
