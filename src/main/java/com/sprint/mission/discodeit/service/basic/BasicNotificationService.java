@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -66,18 +67,19 @@ public class BasicNotificationService implements NotificationService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createMessageNotification(MessageCreatedEvent event) {
+        log.debug("메시지 생성 알람 생성 시작 event={}", event);
         MessageDto messageDto = event.messageDto();
         UserDto authorDto = messageDto.author();
         UUID authorId = authorDto.id();
         UUID channelId = messageDto.channelId();
 
-        List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(authorId)
+        List<User> receivers = readStatusRepository.findAllByChannelIdWithUser(channelId)
                 .stream()
-                .filter(readStatus -> readStatus.getChannel().getId().equals(channelId))
                 .filter(ReadStatus::isNotificationEnabled)
-                .filter(readStatus -> !readStatus.getUser().getId().equals(authorId)) // 작성자는 제외
+                .map(ReadStatus::getUser)
+                .filter(user -> !user.getId().equals(authorId)) // 작성자는 제외
                 .toList();
 
         // Notification 객체 생성 준비
@@ -87,19 +89,20 @@ public class BasicNotificationService implements NotificationService {
                 .getName();
 
         // Notification 객체 생성, 저장
-        for (ReadStatus readStatus : readStatuses) {
-            User receiver = readStatus.getUser();
+        for (User receiver : receivers) {
             String title = authorUsername + " (#" + channelName + ")";
             String content = messageDto.content();
-
             Notification notification = new Notification(receiver, title, content);
+
+            log.debug("메시지 생성 알람 생성 성공: id={}", notification.getId());
             notificationRepository.save(notification);
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createRoleUpdatedNotification(RoleUpdatedEvent event) {
+        log.debug("권한 변경 알람 생성 시작: event={}", event);
         User receiver = event.user();
         String title = "권한이 변경되었습니다.";
         String content = event.oldRole().name() + " -> " + event.newRole().name();
@@ -122,6 +125,7 @@ public class BasicNotificationService implements NotificationService {
         }
 
         UserDto userDto = userDetails.getUserDto();
+        log.debug("권한 변경 알람 생성 완료: id={}, newRole={}", userDto.id(), userDto.role().name());
         return userDto.id();
     }
 }

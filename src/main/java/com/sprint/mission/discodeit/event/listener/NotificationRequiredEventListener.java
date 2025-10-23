@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
@@ -15,12 +16,12 @@ public class NotificationRequiredEventListener {
 
     private final NotificationService notificationService;
 
-    @TransactionalEventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(MessageCreatedEvent event) {
         notificationService.createMessageNotification(event);
     }
 
-    @TransactionalEventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(RoleUpdatedEvent event) {
         notificationService.createRoleUpdatedNotification(event);
     }

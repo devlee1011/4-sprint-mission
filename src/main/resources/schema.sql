@@ -15,12 +15,12 @@ CREATE TABLE users
 -- BinaryContent
 CREATE TABLE binary_contents
 (
-    id           uuid PRIMARY KEY,
-    created_at   timestamp with time zone NOT NULL,
-    file_name    varchar(255)             NOT NULL,
-    size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL,
-    status       varchar(20)              NOT NULL
+    id                    uuid PRIMARY KEY,
+    created_at            timestamp with time zone NOT NULL,
+    file_name             varchar(255)             NOT NULL,
+    size                  bigint                   NOT NULL,
+    content_type          varchar(100)             NOT NULL,
+    binary_content_status varchar(20)              NOT NULL
 );
 
 
@@ -57,16 +57,25 @@ CREATE TABLE message_attachments
 -- ReadStatus
 CREATE TABLE read_statuses
 (
-    id           uuid PRIMARY KEY,
-    created_at   timestamp with time zone NOT NULL,
-    updated_at   timestamp with time zone,
-    user_id      uuid                     NOT NULL,
-    channel_id   uuid                     NOT NULL,
-    last_read_at timestamp with time zone NOT NULL,
-    notification_enabled boolean NOT NULL,
+    id                   uuid PRIMARY KEY,
+    created_at           timestamp with time zone NOT NULL,
+    updated_at           timestamp with time zone,
+    user_id              uuid                     NOT NULL,
+    channel_id           uuid                     NOT NULL,
+    last_read_at         timestamp with time zone NOT NULL,
+    notification_enabled boolean                  NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
+-- Notification
+CREATE TABLE notifications
+(
+    id                  uuid PRIMARY KEY,
+    created_at          timestamp with time zone NOT NULL,
+    receiver_id         uuid                     NOT NULL,
+    title               varchar(200)             NOT NULL,
+    content             text                     NOT NULL
+);
 
 -- 제약 조건
 -- User (1) -> BinaryContent (1)
