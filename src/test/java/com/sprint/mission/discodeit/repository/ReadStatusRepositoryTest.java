@@ -59,8 +59,8 @@ class ReadStatusRepositoryTest {
   /**
    * TestFixture: 테스트용 읽음 상태 생성
    */
-  private ReadStatus createTestReadStatus(User user, Channel channel, Instant lastReadAt) {
-    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
+  private ReadStatus createTestReadStatus(User user, Channel channel, Instant lastReadAt, boolean notificationEnabled) {
+    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt, notificationEnabled);
     return readStatusRepository.save(readStatus);
   }
 
@@ -73,8 +73,8 @@ class ReadStatusRepositoryTest {
     Channel channel2 = createTestChannel(ChannelType.PRIVATE, "채널2");
 
     Instant now = Instant.now();
-    ReadStatus readStatus1 = createTestReadStatus(user, channel1, now.minus(1, ChronoUnit.DAYS));
-    ReadStatus readStatus2 = createTestReadStatus(user, channel2, now);
+    ReadStatus readStatus1 = createTestReadStatus(user, channel1, now.minus(1, ChronoUnit.DAYS), false);
+    ReadStatus readStatus2 = createTestReadStatus(user, channel2, now, true);
 
     // 영속성 컨텍스트 초기화
     entityManager.flush();
@@ -96,8 +96,8 @@ class ReadStatusRepositoryTest {
     Channel channel = createTestChannel(ChannelType.PUBLIC, "공개채널");
 
     Instant now = Instant.now();
-    ReadStatus readStatus1 = createTestReadStatus(user1, channel, now.minus(1, ChronoUnit.DAYS));
-    ReadStatus readStatus2 = createTestReadStatus(user2, channel, now);
+    ReadStatus readStatus1 = createTestReadStatus(user1, channel, now.minus(1, ChronoUnit.DAYS), false);
+    ReadStatus readStatus2 = createTestReadStatus(user2, channel, now, false);
 
     // 영속성 컨텍스트 초기화
     entityManager.flush();
@@ -124,7 +124,7 @@ class ReadStatusRepositoryTest {
     User user = createTestUser("testUser", "test@example.com");
     Channel channel = createTestChannel(ChannelType.PUBLIC, "공개채널");
 
-    ReadStatus readStatus = createTestReadStatus(user, channel, Instant.now());
+    ReadStatus readStatus = createTestReadStatus(user, channel, Instant.now(), false);
 
     // 영속성 컨텍스트 초기화
     entityManager.flush();
@@ -168,11 +168,11 @@ class ReadStatusRepositoryTest {
     Channel otherChannel = createTestChannel(ChannelType.PUBLIC, "유지할채널");
 
     // 삭제할 채널에 읽음 상태 2개 생성
-    createTestReadStatus(user1, channel, Instant.now());
-    createTestReadStatus(user2, channel, Instant.now());
+    createTestReadStatus(user1, channel, Instant.now(), false);
+    createTestReadStatus(user2, channel, Instant.now(), false);
 
     // 유지할 채널에 읽음 상태 1개 생성
-    createTestReadStatus(user1, otherChannel, Instant.now());
+    createTestReadStatus(user1, otherChannel, Instant.now(), false);
 
     // 영속성 컨텍스트 초기화
     entityManager.flush();

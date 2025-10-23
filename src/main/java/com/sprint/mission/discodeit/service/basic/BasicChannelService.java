@@ -39,29 +39,29 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
-    log.debug("채널 생성 시작: {}", request);
+    log.debug("Public 채널 생성 시작: {}", request);
     String name = request.name();
     String description = request.description();
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
     channelRepository.save(channel);
-    log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
+    log.info("Public 채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
     return channelMapper.toDto(channel);
   }
 
   @Transactional
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
-    log.debug("채널 생성 시작: {}", request);
+    log.debug("Private 채널 생성 시작: {}", request);
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.save(channel);
 
     List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
-        .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
+        .map(user -> new ReadStatus(user, channel, channel.getCreatedAt(), true))
         .toList();
     readStatusRepository.saveAll(readStatuses);
 
-    log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
+    log.info("Private 채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
     return channelMapper.toDto(channel);
   }
 
