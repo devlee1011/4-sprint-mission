@@ -5,14 +5,7 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
-import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
-import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
-import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
-import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
-import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
-import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
-import java.util.List;
-import java.util.stream.IntStream;
+import com.sprint.mission.discodeit.security.jwt.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +30,9 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
+import java.util.List;
+import java.util.stream.IntStream;
+
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -54,6 +50,7 @@ public class SecurityConfig {
   )
       throws Exception {
     http
+//            .csrf(AbstractHttpConfigurer::disable)
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())

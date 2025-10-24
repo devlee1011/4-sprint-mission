@@ -20,7 +20,7 @@ CREATE TABLE binary_contents
     file_name             varchar(255)             NOT NULL,
     size                  bigint                   NOT NULL,
     content_type          varchar(100)             NOT NULL,
-    binary_content_status varchar(20)              NOT NULL
+    status varchar(20)              NOT NULL
 );
 
 

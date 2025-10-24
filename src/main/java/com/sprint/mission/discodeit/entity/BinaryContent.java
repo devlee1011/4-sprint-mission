@@ -20,17 +20,18 @@ public class BinaryContent extends BaseEntity {
   private String contentType;
   @Enumerated(EnumType.STRING)
   @Column(length = 20, nullable = false)
-  private BinaryContentStatus binaryContentStatus;
+  private BinaryContentStatus status;
 
-  public BinaryContent(String fileName, Long size, String contentType) {
+  public BinaryContent(String fileName, Long size, String contentType, BinaryContentStatus status) {
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
+    this.status = status;
   }
 
-  public void updateStatus(BinaryContentStatus newBinaryContentStatus) {
-    if (newBinaryContentStatus != null && !binaryContentStatus.equals(newBinaryContentStatus)) {
-      this.binaryContentStatus = newBinaryContentStatus;
+  public void updateStatus(BinaryContentStatus newStatus) {
+    if (newStatus != null && !status.equals(newStatus)) {
+      this.status = newStatus;
     }
   }
 }

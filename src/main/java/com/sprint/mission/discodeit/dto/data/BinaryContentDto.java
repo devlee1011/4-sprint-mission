@@ -9,7 +9,7 @@ public record BinaryContentDto(
     String fileName,
     Long size,
     String contentType,
-    BinaryContentStatus binaryContentStatus
+    BinaryContentStatus status
 ) {
 
 }

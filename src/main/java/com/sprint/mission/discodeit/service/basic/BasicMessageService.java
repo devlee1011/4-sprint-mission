@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -69,7 +66,7 @@ public class BasicMessageService implements MessageService {
           byte[] bytes = attachmentRequest.bytes();
 
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType);
+              contentType, BinaryContentStatus.PROCESSING);
           binaryContentRepository.save(binaryContent);
           eventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
           return binaryContent;
