@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.event.listener;
 
+import com.sprint.mission.discodeit.event.BinaryContentUploadFailureEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -27,5 +29,11 @@ public class NotificationRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(RoleUpdatedEvent event) {
         notificationService.createRoleUpdatedNotification(event);
+    }
+
+    @Async("asyncExecutor")
+    @EventListener
+    public void on(BinaryContentUploadFailureEvent event) {
+        notificationService.createBinaryContentUploadFailureNotification(event);
     }
 }

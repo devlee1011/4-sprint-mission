@@ -6,16 +6,19 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentUploadFailureEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +42,7 @@ public class BasicNotificationService implements NotificationService {
     //
     private final ReadStatusRepository readStatusRepository;
     private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -107,6 +111,31 @@ public class BasicNotificationService implements NotificationService {
         String title = "권한이 변경되었습니다.";
         String content = event.oldRole().name() + " -> " + event.newRole().name();
         Notification notification = new Notification(receiver, title, content);
+        log.debug("권한 변경 알람 생성 성공: id={}", notification.getId());
+
+        notificationRepository.save(notification);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createBinaryContentUploadFailureNotification(BinaryContentUploadFailureEvent event) {
+        log.debug("바이너리 컨텐츠 생성 실패 알람 생성 시작: event={}", event);
+        User receiver = userRepository.findByUsername("admin")
+                .orElseThrow(() -> UserNotFoundException.withUsername("admin"));
+
+        String taskName = event.taskName();
+        String requestId = event.requestId();
+        String binaryContentId = event.binaryContentId().toString();
+        String errorMessage = event.errorMessage();
+
+        String title = taskName + " 실패";
+
+        String content = "RequestId: " + requestId + "\n" +
+                        "BinaryContentId: " + binaryContentId + "\n" +
+                        "Error: " + errorMessage;
+
+        Notification notification = new Notification(receiver, title, content);
+        log.debug("바이너리 컨텐츠 생성 실패 알람 생성 성공: id={}", notification.getId());
 
         notificationRepository.save(notification);
     }

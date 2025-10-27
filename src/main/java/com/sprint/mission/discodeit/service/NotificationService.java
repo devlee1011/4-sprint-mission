@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
+import com.sprint.mission.discodeit.event.BinaryContentUploadFailureEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 
@@ -15,4 +16,6 @@ public interface NotificationService {
     void createMessageNotification(MessageCreatedEvent event);
 
     void createRoleUpdatedNotification(RoleUpdatedEvent event);
+
+    void createBinaryContentUploadFailureNotification(BinaryContentUploadFailureEvent event);
 }

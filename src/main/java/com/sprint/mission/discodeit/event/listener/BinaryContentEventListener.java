@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.event.listener;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.service.BinaryContentUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BinaryContentEventListener {
 
-    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentUploadService uploadService;
     private final BinaryContentService binaryContentService;
 
     @Async("asyncExecutor")
@@ -33,7 +33,7 @@ public class BinaryContentEventListener {
                 size
         );
         try {
-            binaryContentStorage.put(binaryContentId, bytes);
+            uploadService.upload(binaryContentId, bytes);
             binaryContentService.updateStatus(binaryContentId, BinaryContentStatus.SUCCESS);
             log.info("바이너리 데이터 저장 성공: id={}, size={}",
                     binaryContentId,
