@@ -23,6 +23,7 @@ import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable("notifications")
     public List<NotificationDto> getNotifications() {
         UUID receiverId = getCurrentUserId();
         log.debug("알림 조회 시작: receiverId={}", receiverId);

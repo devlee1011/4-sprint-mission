@@ -3,7 +3,7 @@ spring:
     name: discodeit
   cache:
     type: caffeine
-    cache-names: userCache, channelCache, notificationCache
+    cache-names: users, channels, notifications
     caffeine:
       spec: maximumSize=500, expireAfterWrite=5m
   servlet:
