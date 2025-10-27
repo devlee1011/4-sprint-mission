@@ -23,6 +23,7 @@ import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -63,6 +64,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "notifications", allEntries = true)
     public void deleteNotification(UUID notificationId) {
         log.debug("알림 삭제 시작: id={}", notificationId);
         if (!notificationRepository.existsById(notificationId)) {
@@ -74,6 +76,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @CacheEvict(cacheNames = "notifications", allEntries = true)
     public void createMessageNotification(MessageCreatedEvent event) {
         log.debug("메시지 생성 알람 생성 시작 event={}", event);
         MessageDto messageDto = event.messageDto();
@@ -107,6 +110,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @CacheEvict(cacheNames = "notifications", allEntries = true)
     public void createRoleUpdatedNotification(RoleUpdatedEvent event) {
         log.debug("권한 변경 알람 생성 시작: event={}", event);
         User receiver = event.user();
@@ -120,6 +124,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @CacheEvict(cacheNames = "notifications", allEntries = true)
     public void createBinaryContentUploadFailureNotification(BinaryContentUploadFailureEvent event) {
         log.debug("바이너리 컨텐츠 생성 실패 알람 생성 시작: event={}", event);
         User receiver = userRepository.findByUsername("admin")

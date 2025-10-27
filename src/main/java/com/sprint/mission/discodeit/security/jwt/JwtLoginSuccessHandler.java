@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -26,6 +28,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
+  //
+  private final CacheManager cacheManager;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -62,6 +66,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         log.info("JWT access and refresh tokens issued for user: {}", userDetails.getUsername());
 
+        // 사용자 목록 캐시 무효화
+        Cache cache = cacheManager.getCache("users");
+        if (cache != null) {
+          cache.clear();
+          log.debug("users 캐시가 로그아웃 시 무효화되었습니다.");
+        }
+
       } catch (JOSEException e) {
         log.error("Failed to generate JWT token for user: {}", userDetails.getUsername(), e);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -80,5 +91,4 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
   }
-
 }
