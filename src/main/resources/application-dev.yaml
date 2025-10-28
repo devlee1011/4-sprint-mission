@@ -19,6 +19,10 @@ logging:
     org.springframework.security: trace
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers, caches
   endpoint:
     health:
       show-details: always
