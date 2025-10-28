@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentUploadFailureEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
@@ -125,7 +125,7 @@ public class BasicNotificationService implements NotificationService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @CacheEvict(cacheNames = "notifications", allEntries = true)
-    public void createBinaryContentUploadFailureNotification(BinaryContentUploadFailureEvent event) {
+    public void createS3UploadFailedNotification(S3UploadFailedEvent event) {
         log.debug("바이너리 컨텐츠 생성 실패 알람 생성 시작: event={}", event);
         User receiver = userRepository.findByUsername("admin")
                 .orElseThrow(() -> UserNotFoundException.withUsername("admin"));

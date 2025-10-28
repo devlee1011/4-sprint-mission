@@ -12,13 +12,13 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class AsyncConfig {
 
-    @Bean(name = "asyncExecutor")
-    public Executor asyncExecutor() {
+    @Bean(name = "eventTaskExecutor")
+    public Executor eventTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(4);
         executor.setMaxPoolSize(8);
         executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("AsyncExecutor-");
+        executor.setThreadNamePrefix("EventTaskExecutor-");
         executor.setTaskDecorator(new CompositeTaskDecorator(
                 List.of(
                 new MdcTaskDecorator(),

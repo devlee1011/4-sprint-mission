@@ -21,7 +21,7 @@ public class BinaryContentEventListener {
     private final BinaryContentUploadService uploadService;
     private final BinaryContentService binaryContentService;
 
-    @Async("asyncExecutor")
+    @Async("eventTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleBinaryContentCreated(BinaryContentCreatedEvent event) {
         UUID binaryContentId = event.binaryContentId();

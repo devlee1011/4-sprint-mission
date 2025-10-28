@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.event.BinaryContentUploadFailureEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.service.BinaryContentUploadService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class BasicBinaryContentUploadService implements BinaryContentUploadServi
                 e);
 
         // 관리자에게 실패 알람 생성
-        publisher.publishEvent(new BinaryContentUploadFailureEvent(binaryContentId, requestId, TASK_NAME, errorMessage));
+        publisher.publishEvent(new S3UploadFailedEvent(binaryContentId, requestId, TASK_NAME, errorMessage));
 
         throw e;
     }
