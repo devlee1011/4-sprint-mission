@@ -10,7 +10,7 @@ public class NotificationRequiredEventListener {
 //    @Async("eventTaskExecutor")
 //    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 //    public void on(MessageCreatedEvent event) {
-//        notificationService.createMessageNotification(event);
+//        notificationService.crea teMessageNotification(event);
 //    }
 //
 //    @Async("eventTaskExecutor")

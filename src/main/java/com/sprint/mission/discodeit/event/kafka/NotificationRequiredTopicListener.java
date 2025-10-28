@@ -13,15 +13,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class NotificationRequiredKafkaListener {
+public class NotificationRequiredTopicListener {
 
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
 
-    @KafkaListener(
-            topics = "discodeit.MessageCreatedEvent",
-            groupId = "discodeit-group"
-    )
+    @KafkaListener(topics = "discodeit.MessageCreatedEvent")
     public void onMessageCreated(String message) {
         try {
             MessageCreatedEvent event = objectMapper.readValue(message, MessageCreatedEvent.class);
@@ -31,10 +28,7 @@ public class NotificationRequiredKafkaListener {
         }
     }
 
-    @KafkaListener(
-            topics = "discodeit.RoleUpdatedEvent",
-            groupId = "discodeit-group"
-    )
+    @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
     public void onRoleUpdated(String message) {
         try {
             RoleUpdatedEvent event = objectMapper.readValue(message, RoleUpdatedEvent.class);
@@ -44,10 +38,7 @@ public class NotificationRequiredKafkaListener {
         }
     }
 
-    @KafkaListener(
-            topics = "discodeit.S3UploadFailedEvent",
-            groupId = "discodeit-group"
-    )
+    @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
     public void onS3UploadFailed(String message) {
         try {
             S3UploadFailedEvent event = objectMapper.readValue(message, S3UploadFailedEvent.class);
