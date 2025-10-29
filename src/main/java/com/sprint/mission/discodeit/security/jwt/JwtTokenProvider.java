@@ -8,7 +8,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.sprint.mission.discodeit.dto.data.UserDto;
+import jakarta.servlet.http.Cookie;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,5 +110,14 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             throw new RuntimeException("Access Token 갱신 실패");
         }
+    }
+
+    public Cookie generateRefreshTokenCookie(String refreshToken) {
+        Cookie newRefreshToken = new Cookie("REFRESH_TOKEN", refreshToken);
+        newRefreshToken.setHttpOnly(true);
+        newRefreshToken.setSecure(true);
+        newRefreshToken.setPath("/");
+        newRefreshToken.setMaxAge(refreshTokenExpirationMinutes * 60);
+        return newRefreshToken;
     }
 }
