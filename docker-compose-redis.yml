@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - discodeit-network
+
+volumes:
+  redis-data:
+
+networks:
+  discodeit-network:
+    external:
+      name: sprint_mission_12_discodeit-network
