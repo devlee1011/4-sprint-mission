@@ -96,22 +96,10 @@ public class BasicBinaryContentService implements BinaryContentService {
                 .orElseThrow(() -> BinaryContentNotFoundException.withId(binaryContentId));
         binaryContent.updateStatus(status);
         binaryContentRepository.save(binaryContent);
-        return binaryContentMapper.toDto(binaryContent);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Override
-    public BinaryContentDto updateStatusForChannelMessage(UUID binaryContentId, BinaryContentStatus status, UUID channelId) {
-        log.debug("(채널 메시지) 바이너리 컨텐츠 상태 업데이트 시작: id={}, status={}, channelId={}", binaryContentId, status, channelId);
-        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> BinaryContentNotFoundException.withId(binaryContentId));
-        binaryContent.updateStatus(status);
-        binaryContentRepository.save(binaryContent);
         BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
 
-        // SSE 전송 (브로드캐스트)
         String eventName = "binaryContents.updated";
         sseService.broadcast(eventName, dto);
-        return dto;
+        return binaryContentMapper.toDto(binaryContent);
     }
 }

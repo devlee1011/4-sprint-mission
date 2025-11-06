@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.event.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.event.message.MessageCreatedEventForWebSocket;
 import lombok.RequiredArgsConstructor;
@@ -14,15 +16,21 @@ import org.springframework.stereotype.Component;
 public class WebSocketRequiredTopicListener {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "discodeit.MessageCreatedEventForWebSocket")
-    public void onMessageCreatedEventForWebSocket(MessageCreatedEventForWebSocket event) {
-        log.info("WebSocket 메시지 생성 이벤트 수신: {}", event);
+    public void onMessageCreatedEventForWebSocket(String kafkaEvent) {
+        try {
+            MessageCreatedEventForWebSocket event = objectMapper.readValue(kafkaEvent, MessageCreatedEventForWebSocket.class);
+            log.info("WebSocket 메시지 생성 이벤트 수신: {}", event);
 
-        MessageDto messageDto = event.getData();
-        String destination = String.format("/sub/channels.%s.messages", messageDto.channelId());
+            MessageDto messageDto = event.getData();
+            String destination = String.format("/sub/channels.%s.messages", messageDto.channelId());
 
-        messagingTemplate.convertAndSend(destination, messageDto);
-        log.debug("WebSocket 메시지 전송 완료: messageDto={}, destination={}", messageDto, destination);
+            messagingTemplate.convertAndSend(destination, messageDto);
+            log.debug("WebSocket 메시지 전송 완료: messageDto={}, destination={}", messageDto, destination);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

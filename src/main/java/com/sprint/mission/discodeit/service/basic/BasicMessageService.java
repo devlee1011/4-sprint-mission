@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.message.BinaryContentAttachmentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.message.MessageCreatedEventForNotification;
 import com.sprint.mission.discodeit.event.message.MessageCreatedEventForWebSocket;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -72,10 +72,9 @@ public class BasicMessageService implements MessageService {
               contentType);
           binaryContentRepository.save(binaryContent);
           eventPublisher.publishEvent(
-              new BinaryContentAttachmentCreatedEvent(binaryContent,
+              new BinaryContentCreatedEvent(binaryContent,
                       binaryContent.getCreatedAt(),
-                      bytes,
-                      channelId)
+                      bytes)
           );
           return binaryContent;
         })

@@ -45,12 +45,6 @@ public class KafkaProduceRequiredEventListener {
     sendToKafka(event);
   }
 
-  @Async("eventTaskExecutor")
-  @TransactionalEventListener
-  public void on(BinaryContentAttachmentCreatedEvent event) {
-    sendToKafka(event);
-  }
-
   // WebSocket
   @Async("eventTaskExecutor")
   @TransactionalEventListener
