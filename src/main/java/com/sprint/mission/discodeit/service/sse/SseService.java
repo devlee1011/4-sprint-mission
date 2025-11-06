@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.sse;
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.SseMessage;
 import com.sprint.mission.discodeit.repository.SseEmitterRepository;
 import com.sprint.mission.discodeit.repository.SseMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -25,21 +27,38 @@ public class SseService {
     //
     private final SseEmitterRepository sseEmitterRepository;
     private final SseMessageRepository sseMessageRepository;
+    //
 
     public SseEmitter connect(UUID receiverId, UUID lastEventId) {
         log.info("SseEmitter 객체 생성 시작: receiverId={}, lastEventId={}", receiverId, lastEventId);
-        SseEmitter savedEmitter = sseEmitterRepository.save(receiverId, new SseEmitter(TIMEOUT));
+        SseEmitter emitter = new SseEmitter(TIMEOUT);
+
+        // 연결 종료 / 오류 시 emitter 정리
+        emitter.onCompletion(() -> {
+            log.info("SSE connection completed for receiverId={}", receiverId);
+            sseEmitterRepository.remove(receiverId, emitter);
+        });
+        emitter.onTimeout(() -> {
+            log.info("SSE connection timeout for receiverId={}", receiverId);
+            sseEmitterRepository.remove(receiverId, emitter);
+        });
+        emitter.onError(e -> {
+            log.warn("SSE connection error for receiverId={}, error={}", receiverId, e.getMessage());
+            sseEmitterRepository.remove(receiverId, emitter);
+        });
+
+        SseEmitter savedEmitter = sseEmitterRepository.save(receiverId, emitter);
+
         try {
-            savedEmitter.send(
-                    SseEmitter.event()
-                            .name("connected")                         // 이벤트 이름
-                            .data(Map.of("receiverId", receiverId))         // 초기 데이터 (receiverId 반환)
-            );
+            savedEmitter.send(SseEmitter.event()
+                    .name("connected")
+                    .data(Map.of("receiverId", receiverId)));
             resendMissedEvents(receiverId, lastEventId, savedEmitter);
         } catch (Exception e) {
+            log.error("SSE 초기 연결 중 오류 발생: {}", e.getMessage(), e);
             savedEmitter.completeWithError(e);
         }
-        log.debug("SseEmitter 객체 생성 완료: SseEmitter={}", savedEmitter);
+
         return savedEmitter;
     }
 
@@ -58,7 +77,7 @@ public class SseService {
                     emitter.send(SseEmitter.event()
                             .id(eventId.toString())
                             .name(eventName)
-                            .data(data));
+                            .data(data), MediaType.TEXT_EVENT_STREAM);
                     log.debug("SSE 이벤트 전송 완료: receiverId={}, eventId={}, eventName={}, data={}", receiverId, eventId, eventName, data);
                 } catch (IOException e) {
                     log.warn("SSE 전송 실패 (receiverId={}): {}", receiverId, e.getMessage());
@@ -75,7 +94,7 @@ public class SseService {
                     try {
                         emitter.send(SseEmitter.event()
                                 .name(eventName)
-                                .data(data));
+                                .data(data), MediaType.TEXT_EVENT_STREAM);
                         log.debug("SSE 이벤트 브로드캐스트 완료: receiverId={}, eventName={}, data={}", receiverId, eventName, data);
                     } catch (IOException e) {
                         log.error("SSE 이벤트 브로드캐스트 실패: eventName={}, data={}", eventName, e.getMessage());
@@ -102,16 +121,22 @@ public class SseService {
         log.info("SSE 클린업 완료: activeSessionCount={}", sseEmitterRepository.findAll().size());
     }
 
-    @Scheduled(fixedRate = 10000)   // 10초 간격
+    @Scheduled(fixedRate = 10000)
     public void heartbeat() {
-        sseEmitterRepository.findAll().forEach((receiverId, emitters) -> {
-            for (SseEmitter emitter : emitters) {
+        Map<UUID, List<SseEmitter>> allEmitters = sseEmitterRepository.findAll();
+
+        allEmitters.forEach((receiverId, emitterList) -> {
+            if (emitterList == null || emitterList.isEmpty()) {
+                return;
+            }
+            for (SseEmitter emitter : List.copyOf(emitterList)) { // snapshot 사용
                 try {
                     emitter.send(SseEmitter.event()
                             .name("heartbeat")
                             .data("alive"));
                 } catch (IOException e) {
-                    log.debug("Heartbeat failed, removing emitter for receiverId={}", receiverId);
+                    log.debug("Heartbeat failed, removing emitter for receiverId={}, reason={}",
+                            receiverId, e.getMessage());
                     sseEmitterRepository.remove(receiverId, emitter);
                 }
             }

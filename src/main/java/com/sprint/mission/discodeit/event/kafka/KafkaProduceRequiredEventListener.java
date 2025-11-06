@@ -40,7 +40,7 @@ public class KafkaProduceRequiredEventListener {
 
   // BinaryContent
   @Async("eventTaskExecutor")
-  @TransactionalEventListener
+  @EventListener
   public void on(BinaryContentCreatedEvent event) {
     sendToKafka(event);
   }

@@ -38,7 +38,7 @@ public class NotificationRequiredTopicListener {
   private String adminUsername;
 
 
-  @KafkaListener(topics = "discodeit.MessageCreatedEvent")
+  @KafkaListener(topics = "discodeit.MessageCreatedEventForNotification")
   public void onMessageCreatedEvent(String kafkaEvent) {
     try {
       log.debug("(KafkaListener) 메시지 전송 알림 생성 시작: kafkaEvent={}", kafkaEvent);
