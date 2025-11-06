@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.event.message.MessageCreatedEventForWebSocket;
-import com.sprint.mission.discodeit.event.message.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.event.message.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.event.message.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -21,9 +19,10 @@ public class KafkaProduceRequiredEventListener {
   private final KafkaTemplate<String, String> kafkaTemplate;
   private final ObjectMapper objectMapper;
 
+  // Notification
   @Async("eventTaskExecutor")
   @TransactionalEventListener
-  public void on(MessageCreatedEventForWebSocket event) {
+  public void on(MessageCreatedEventForNotification event) {
     sendToKafka(event);
   }
 
@@ -36,6 +35,26 @@ public class KafkaProduceRequiredEventListener {
   @Async("eventTaskExecutor")
   @EventListener
   public void on(S3UploadFailedEvent event) {
+    sendToKafka(event);
+  }
+
+  // BinaryContent
+  @Async("eventTaskExecutor")
+  @TransactionalEventListener
+  public void on(BinaryContentCreatedEvent event) {
+    sendToKafka(event);
+  }
+
+  @Async("eventTaskExecutor")
+  @TransactionalEventListener
+  public void on(BinaryContentAttachmentCreatedEvent event) {
+    sendToKafka(event);
+  }
+
+  // WebSocket
+  @Async("eventTaskExecutor")
+  @TransactionalEventListener
+  public void on(MessageCreatedEventForWebSocket event) {
     sendToKafka(event);
   }
 

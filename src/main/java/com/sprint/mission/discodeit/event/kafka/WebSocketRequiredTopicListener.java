@@ -1,23 +1,22 @@
-package com.sprint.mission.discodeit.event.listener;
+package com.sprint.mission.discodeit.event.kafka;
 
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.event.message.MessageCreatedEventForWebSocket;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
-// @Component
 @Slf4j
+@Component
 @RequiredArgsConstructor
-public class WebSocketRequiredEventListener {
+public class WebSocketRequiredTopicListener {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleMessage(MessageCreatedEventForWebSocket event) {
+    @KafkaListener(topics = "discodeit.MessageCreatedEventForWebSocket")
+    public void onMessageCreatedEventForWebSocket(MessageCreatedEventForWebSocket event) {
         log.info("WebSocket 메시지 생성 이벤트 수신: {}", event);
 
         MessageDto messageDto = event.getData();
