@@ -17,4 +17,6 @@ public interface BinaryContentService {
   void delete(UUID binaryContentId);
 
   BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status);
+
+  BinaryContentDto updateStatusForChannelMessage(UUID binaryContentId, BinaryContentStatus status, UUID channelId);
 }

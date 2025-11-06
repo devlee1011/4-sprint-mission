@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.event.message;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import java.time.Instant;
+import java.util.UUID;
+
 import lombok.Getter;
 
 @Getter

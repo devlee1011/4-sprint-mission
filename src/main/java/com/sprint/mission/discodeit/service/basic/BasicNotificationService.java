@@ -7,9 +7,7 @@ import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundE
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import com.sprint.mission.discodeit.service.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -21,6 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -29,6 +31,7 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
   private final CacheManager cacheManager;
+  private final SseService sseService;
 
   @Cacheable(value = "notifications", key = "#receiverId", unless = "#result.isEmpty()")
   @PreAuthorize("principal.userDto.id == #receiverId")
@@ -74,6 +77,21 @@ public class BasicNotificationService implements NotificationService {
             content
         )).toList();
     notificationRepository.saveAll(notifications);
+
+    // SSE 이벤트 전송
+    notifications.forEach(notification -> {
+      NotificationDto dto = notificationMapper.toDto(notification);
+      String eventName = "notifications.created";
+      UUID receiverId = dto.receiverId();
+      log.info("(알람) SSE 이벤트 전송 시작: receiverId={}", receiverId);
+      sseService.send(
+              List.of(receiverId),    // 특정 사용자에게 전송
+              eventName,              // 이벤트 이름
+              dto                      // 클라이언트에서 받을 데이터
+      );
+      log.debug("(알람) SSE 이벤트 전송 완료: receiverId={}", receiverId);
+    });
+
     evictNotificationCache(receiverIds);
     log.info("새 알림 생성 완료: receiverIds={}", receiverIds);
   }
@@ -89,4 +107,4 @@ public class BasicNotificationService implements NotificationService {
       log.warn("알림 캐시가 존재하지 않습니다.");
     }
   }
-} 
+}

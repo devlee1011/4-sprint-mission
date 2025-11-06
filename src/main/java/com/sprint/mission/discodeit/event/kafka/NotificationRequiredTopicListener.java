@@ -41,6 +41,7 @@ public class NotificationRequiredTopicListener {
   @KafkaListener(topics = "discodeit.MessageCreatedEvent")
   public void onMessageCreatedEvent(String kafkaEvent) {
     try {
+      log.debug("(KafkaListener) 메시지 전송 알림 생성 시작: kafkaEvent={}", kafkaEvent);
       MessageCreatedEventForNotification event = objectMapper.readValue(kafkaEvent,
               MessageCreatedEventForNotification.class);
 
@@ -61,6 +62,7 @@ public class NotificationRequiredTopicListener {
       String content = message.content();
 
       notificationService.create(receiverIds, title, content);
+      log.debug("(KafkaListener) 메시지 전송 알림 생성 완료: receiverIds={}, title={}, content={}", receiverIds, title, content);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
